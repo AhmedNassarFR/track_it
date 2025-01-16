@@ -16,9 +16,9 @@ class HistoryScreen extends StatelessWidget {
           "History",
           style: TextStyle(color: AppColors.white),
         ),
-        backgroundColor: AppColors.lightBlue,
+        backgroundColor: AppColors.darkGrey,
       ),
-      backgroundColor: AppColors.blue,
+      backgroundColor: AppColors.darkerGrey,
       body: training.history.isEmpty
           ? const Center(
         child: Text(
@@ -38,7 +38,7 @@ class HistoryScreen extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15),
-                color: AppColors.lightBlue,
+                color: AppColors.darkGrey,
               ),
               height: 50,
               child: Padding(

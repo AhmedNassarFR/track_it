@@ -11,7 +11,7 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.blue,
+      backgroundColor: AppColors.darkerGrey,
       body: ListView(shrinkWrap: true,
         padding: const EdgeInsets.symmetric(horizontal: 30.0),
         children: [
@@ -24,7 +24,7 @@ class ProfilePage extends StatelessWidget {
                 alignment: AlignmentDirectional.bottomEnd,
                 children: [
                   CircleAvatar(
-                      backgroundColor: AppColors.lightBlue,
+                      backgroundColor: AppColors.darkGrey,
                       radius: 75,
                       backgroundImage:
                           profileController.profileImage.value != null
@@ -59,7 +59,7 @@ class ProfilePage extends StatelessWidget {
           MyButton(
             height: 50,
             width: 200,
-            color: AppColors.lightBlue,
+            color: AppColors.darkGrey,
             onTap: () async {
               await profileController.saveUserData();
               Get.off(HomePage());
@@ -87,17 +87,17 @@ class ProfilePage extends StatelessWidget {
           textAlign: TextAlign.center,
           decoration: InputDecoration(
             suffixIcon: Icon(Icons.edit,color: AppColors.white, size: 20,),
-            fillColor: AppColors.lightBlue,
+            fillColor: AppColors.darkGrey,
             filled: true,
             hintText: hintText,
             hintStyle: const TextStyle(color: AppColors.white, fontSize: 15),
             enabledBorder: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(15)),
-              borderSide: BorderSide(color: AppColors.lightBlue),
+              borderSide: BorderSide(color: AppColors.darkGrey),
             ),
             focusedBorder: const OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(15)),
-              borderSide: BorderSide(color: AppColors.lightBlue),
+              borderSide: BorderSide(color: AppColors.darkGrey),
             ),
           ),
         ));

@@ -17,8 +17,8 @@ class EditWeightScreen extends StatelessWidget {
     weightController.text = training.weight.toString();
 
     return Center(
-      child: Material(
-        color: AppColors.blue,
+      child: Material(borderRadius: BorderRadius.circular(15),
+        color: AppColors.darkerGrey,
         child: Padding(
           padding: const EdgeInsets.all(10.0),
           child: Container(
@@ -26,7 +26,7 @@ class EditWeightScreen extends StatelessWidget {
             width: MediaQuery.of(context).size.width * 0.80,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
-              color: AppColors.blue,
+              color: AppColors.darkerGrey,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -41,17 +41,17 @@ class EditWeightScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
-                      fillColor: AppColors.lightBlue,
+                      fillColor: AppColors.darkGrey,
                       filled: true,
                       hintText: "Enter the new weight",
                       hintStyle: TextStyle(color: AppColors.white, fontSize: 15),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(15)),
-                        borderSide: BorderSide(color: AppColors.lightBlue),
+                        borderSide: BorderSide(color: AppColors.darkGrey),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(15)),
-                        borderSide: BorderSide(color: AppColors.lightBlue),
+                        borderSide: BorderSide(color: AppColors.darkGrey),
                       ),
                     ),
                   ),
@@ -64,11 +64,11 @@ class EditWeightScreen extends StatelessWidget {
                       if (weightController.text.isNotEmpty) {
                         final newWeight = double.parse(weightController.text);
                         trainingController.editWeight(index, newWeight);
-                        Get.back(closeOverlays: true);
+                        Get.back(); // Close the current overlay and the one behind it
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      primary: AppColors.lightBlue,
+                      primary: AppColors.darkGrey,
                       onPrimary: AppColors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),

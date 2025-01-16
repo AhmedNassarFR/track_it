@@ -104,7 +104,7 @@ class _BMRFormState extends State<BMRForm> {
           style: TextStyle(color: AppColors.white),
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppColors.lightBlue,
+            fillColor: AppColors.darkGrey,
             labelText: 'Age',
             labelStyle: TextStyle(color: AppColors.white),
             border: OutlineInputBorder(
@@ -119,7 +119,7 @@ class _BMRFormState extends State<BMRForm> {
           style: TextStyle(color: AppColors.white),
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppColors.lightBlue,
+            fillColor: AppColors.darkGrey,
             labelText: 'Height (cm)',
             labelStyle: TextStyle(color: AppColors.white),
             border: OutlineInputBorder(
@@ -134,7 +134,7 @@ class _BMRFormState extends State<BMRForm> {
           style: TextStyle(color: AppColors.white),
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppColors.lightBlue,
+            fillColor: AppColors.darkGrey,
             labelText: 'Weight (kg)',
             labelStyle: TextStyle(color: AppColors.white),
             border: OutlineInputBorder(
@@ -157,7 +157,7 @@ class _BMRFormState extends State<BMRForm> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<ActivityLevel>(
-                  dropdownColor: AppColors.lightBlue,
+                  dropdownColor: AppColors.darkGrey,
                   isExpanded: true,
                   value: selectedActivityLevel,
                   onChanged: (value) {
@@ -170,7 +170,7 @@ class _BMRFormState extends State<BMRForm> {
                       value: level,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.lightBlue,
+                          color: AppColors.darkGrey,
                           border: Border(bottom: BorderSide.none),
                         ),
                         child: Text(
@@ -183,7 +183,7 @@ class _BMRFormState extends State<BMRForm> {
                   }).toList(),
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: AppColors.lightBlue,
+                    fillColor: AppColors.darkGrey,
                     // labelText: 'Activity Level',
                     labelStyle: TextStyle(color: AppColors.white),
                     border: OutlineInputBorder(
@@ -203,7 +203,7 @@ class _BMRFormState extends State<BMRForm> {
             style: TextStyle(color: AppColors.white),
           ),
           style: ElevatedButton.styleFrom(
-            primary: AppColors.lightBlue,
+            primary: AppColors.darkGrey,
           ),
         ),
         SizedBox(height: 16),

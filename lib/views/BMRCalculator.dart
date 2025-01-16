@@ -9,7 +9,7 @@ class BMRCalculator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: AppColors.blue,
+      backgroundColor: AppColors.darkerGrey,
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: SingleChildScrollView(
