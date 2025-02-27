@@ -95,7 +95,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.blue,
+      backgroundColor: AppColors.darkerGrey,
       body: ListView(
         children: [
           Container(
@@ -110,7 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: GestureDetector(
                       onTap: _pickImage,
                       child: CircleAvatar(
-                        backgroundColor: AppColors.lightBlue,
+                        backgroundColor: AppColors.darkGrey,
                         radius: 75,
                         backgroundImage: _image != null ? FileImage(_image!) : null,
                         child: _image == null
@@ -126,17 +126,17 @@ class _RegisterPageState extends State<RegisterPage> {
                       style: const TextStyle(color: AppColors.white),
                       textAlign: TextAlign.center,
                       decoration: const InputDecoration(
-                        fillColor: AppColors.lightBlue,
+                        fillColor: AppColors.darkGrey,
                         filled: true,
                         hintText: "Enter your name",
                         hintStyle: TextStyle(color: AppColors.white, fontSize: 15),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(15)),
-                          borderSide: BorderSide(color: AppColors.lightBlue),
+                          borderSide: BorderSide(color: AppColors.darkGrey),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(15)),
-                          borderSide: BorderSide(color: AppColors.lightBlue),
+                          borderSide: BorderSide(color: AppColors.darkGrey),
                         ),
                       ),
                     ),
@@ -149,17 +149,17 @@ class _RegisterPageState extends State<RegisterPage> {
                       textAlign: TextAlign.center,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        fillColor: AppColors.lightBlue,
+                        fillColor: AppColors.darkGrey,
                         filled: true,
                         hintText: "Enter your age",
                         hintStyle: TextStyle(color: AppColors.white, fontSize: 15),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(15)),
-                          borderSide: BorderSide(color: AppColors.lightBlue),
+                          borderSide: BorderSide(color: AppColors.darkGrey),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(15)),
-                          borderSide: BorderSide(color: AppColors.lightBlue),
+                          borderSide: BorderSide(color: AppColors.darkGrey),
                         ),
                       ),
                     ),
@@ -172,17 +172,17 @@ class _RegisterPageState extends State<RegisterPage> {
                       textAlign: TextAlign.center,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
-                        fillColor: AppColors.lightBlue,
+                        fillColor: AppColors.darkGrey,
                         filled: true,
                         hintText: "Enter your weight",
                         hintStyle: TextStyle(color: AppColors.white, fontSize: 15),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(15)),
-                          borderSide: BorderSide(color: AppColors.lightBlue),
+                          borderSide: BorderSide(color: AppColors.darkGrey),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(15)),
-                          borderSide: BorderSide(color: AppColors.lightBlue),
+                          borderSide: BorderSide(color: AppColors.darkGrey),
                         ),
                       ),
                     ),
@@ -193,7 +193,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: MyButton(
                       height: 50,
                       width: 200,
-                      color: AppColors.lightBlue,
+                      color: AppColors.darkGrey,
                       onTap: () {
                         sharedPreferences?.setString("name", userName.text);
                         sharedPreferences?.setString("age", userAge.text);

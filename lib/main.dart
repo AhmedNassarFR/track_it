@@ -41,7 +41,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: registered ? HomePage() : RegisterPage(), // Navigate based on registration status
+      home: registered ? HomePage() : RegisterPage(),
+
     );
   }
 }
