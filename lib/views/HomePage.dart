@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:track_it/AppColors.dart';
+import 'package:track_it/controllers/ProfileController.dart';
 import 'package:track_it/views/ProfilePage.dart';
 import 'package:track_it/views/TrainingTypeScreen.dart';
 import 'package:track_it/controllers/TrainingController.dart';
@@ -18,6 +19,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TrainingController trainingController = Get.put(TrainingController());
+  final ProfileController profileController = Get.put(ProfileController());
 
   int myIndex = 0;
 
@@ -70,18 +72,23 @@ class _HomePageState extends State<HomePage> {
                 fontWeight: FontWeight.w400,
               ),
             ),
-            ShaderMask(
-              shaderCallback: (bounds) =>
-                  AppColors.accentGradient.createShader(bounds),
-              child: Text(
-                userName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
+            Obx(() {
+              final name = profileController.userName.value.isNotEmpty
+                  ? profileController.userName.value
+                  : (sharedPreferences?.getString("name") ?? "Athlete");
+              return ShaderMask(
+                shaderCallback: (bounds) =>
+                    AppColors.accentGradient.createShader(bounds),
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                  ),
                 ),
-              ),
-            ),
+              );
+            }),
           ],
         ),
         toolbarHeight: 70,

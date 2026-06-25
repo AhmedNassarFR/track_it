@@ -42,11 +42,7 @@ class ProfilePage extends StatelessWidget {
                         child: CircleAvatar(
                           backgroundColor: AppColors.darkGrey,
                           radius: 70,
-                          backgroundImage:
-                              profileController.profileImage.value != null
-                                  ? FileImage(
-                                      profileController.profileImage.value!)
-                                  : null,
+                          backgroundImage: profileController.profileImage.value,
                           child: profileController.profileImage.value == null
                               ? const Icon(Icons.camera_alt,
                                   color: AppColors.white, size: 40)
@@ -101,7 +97,13 @@ class ProfilePage extends StatelessWidget {
             color: AppColors.darkGrey,
             onTap: () async {
               await profileController.saveUserData();
-              Get.off(const HomePage());
+              Get.snackbar(
+                'Saved',
+                'Your profile has been updated.',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: AppColors.lightGrey,
+                colorText: AppColors.white,
+              );
             },
             child: const Text("Save",
                 style: TextStyle(

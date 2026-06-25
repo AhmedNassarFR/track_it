@@ -1,7 +1,9 @@
-import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:track_it/models/TrainingModel.dart';
+import 'package:track_it/services/StorageService.dart';
+import 'package:track_it/services/cloud_sync_service.dart';
+import 'package:track_it/services/firebase_service.dart';
 
 class TrainingController extends GetxController {
   RxList<TrainingModel> trainingList = <TrainingModel>[].obs;
@@ -14,25 +16,28 @@ class TrainingController extends GetxController {
     loadCategories();
   }
 
-  // ─── Training Persistence ───
-
   Future<void> loadTrainingList() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? trainingJsonList = prefs.getStringList('trainingDetails');
+    final localList = await StorageService.loadTrainingList();
+    if (localList.isNotEmpty) {
+      trainingList.assignAll(localList);
+    }
 
-    if (trainingJsonList != null) {
-      List<TrainingModel> loadedList = trainingJsonList
-          .map((jsonString) => TrainingModel.fromJson(jsonDecode(jsonString)))
-          .toList();
-      trainingList.assignAll(loadedList);
+    if (FirebaseService.isReady && FirebaseAuth.instance.currentUser != null) {
+      final cloudList = await CloudSyncService.loadTrainings();
+      if (cloudList.isNotEmpty) {
+        trainingList.assignAll(cloudList);
+        await saveTrainingList();
+      } else if (trainingList.isNotEmpty) {
+        await CloudSyncService.saveTrainings(trainingList);
+      }
     }
   }
 
   Future<void> saveTrainingList() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> trainingJsonList =
-        trainingList.map((training) => jsonEncode(training.toJson())).toList();
-    await prefs.setStringList('trainingDetails', trainingJsonList);
+    await StorageService.saveTrainingList(trainingList);
+    if (FirebaseService.isReady && FirebaseAuth.instance.currentUser != null) {
+      await CloudSyncService.saveTrainings(trainingList);
+    }
   }
 
   // ─── Category CRUD ───
@@ -115,6 +120,7 @@ class TrainingController extends GetxController {
   // ─── Exercise CRUD & Set Logging ───
 
   void addTraining(TrainingModel training) {
+    training.id ??= DateTime.now().microsecondsSinceEpoch.toString();
     trainingList.add(training);
     saveTrainingList();
   }

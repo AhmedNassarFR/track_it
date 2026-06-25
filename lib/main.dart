@@ -1,28 +1,24 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:track_it/services/firebase_service.dart';
 import 'package:track_it/views/HomePage.dart';
 import 'package:track_it/views/RegisterPage.dart';
+import 'package:track_it/views/SignInPage.dart';
 
 SharedPreferences? sharedPreferences;
-
-Future<bool> checkRegistration() async {
-  String? userName = sharedPreferences?.getString("name");
-  return userName != null && userName.isNotEmpty;
-}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   sharedPreferences = await SharedPreferences.getInstance();
-  bool registered = await checkRegistration();
+  await FirebaseService.initialize();
 
-  runApp(MyApp(registered: registered));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final bool registered;
-
-  const MyApp({Key? key, required this.registered}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +40,37 @@ class MyApp extends StatelessWidget {
         ),
         fontFamily: 'Roboto',
       ),
-      home: registered ? const HomePage() : RegisterPage(),
+      home: const StartupGate(),
+    );
+  }
+}
+
+class StartupGate extends StatelessWidget {
+  const StartupGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasCompletedSignup = sharedPreferences?.getBool('hasCompletedSignup') ?? false;
+
+    if (!FirebaseService.isReady) {
+      return hasCompletedSignup ? const HomePage() : RegisterPage();
+    }
+
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.data != null) {
+          return const HomePage();
+        }
+
+        return hasCompletedSignup ? const SignInPage() : RegisterPage();
+      },
     );
   }
 }

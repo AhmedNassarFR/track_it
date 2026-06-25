@@ -12,7 +12,7 @@ class MyButton extends StatefulWidget {
   });
 
   final double height, width;
-  final Text child;
+  final Widget child;
   final Function()? onTap;
   final Color color;
 
