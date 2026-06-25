@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:track_it/models/TrainingModel.dart';
 import 'package:track_it/services/StorageService.dart';
 import 'package:track_it/services/cloud_sync_service.dart';
