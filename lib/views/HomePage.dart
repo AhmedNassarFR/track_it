@@ -1,15 +1,13 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:track_it/AppColors.dart';
 import 'package:track_it/views/ProfilePage.dart';
 import 'package:track_it/views/TrainingTypeScreen.dart';
-import 'package:track_it/widgets/AddTraining.dart';
 import 'package:track_it/controllers/TrainingController.dart';
 
 import '../main.dart';
 import 'BMRCalculator.dart';
-import 'HomeScreen.dart';
-// Ensure sharedPreferences is imported correctly
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -22,7 +20,6 @@ class _HomePageState extends State<HomePage> {
   final TrainingController trainingController = Get.put(TrainingController());
 
   int myIndex = 0;
-  late String trainingType = ""; // Default value for trainingType
 
   void _onItemTapped(int index) {
     setState(() {
@@ -30,64 +27,116 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-    final userName = sharedPreferences?.getString("name") ?? ""; // Safe access to sharedPreferences
+    final userName =
+        sharedPreferences?.getString("name") ?? "";
 
     final List<Widget> widgetList = [
-      TrainingTypeScreen(), // Show training type selection first
-       // Home page shows selected training type
-      BMRCalculator(),
+      TrainingTypeScreen(),
+      const BMRCalculator(),
       ProfilePage(),
-
     ];
 
     return Scaffold(
+      extendBody: true,
       appBar: AppBar(
-        title: Text("Hello, $userName",
-            style: const TextStyle(
-                color: AppColors.white, fontWeight: FontWeight.bold)),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.accentCyan.withOpacity(0.15),
+                AppColors.accentPurple.withOpacity(0.15),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Hello,',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+            ShaderMask(
+              shaderCallback: (bounds) =>
+                  AppColors.accentGradient.createShader(bounds),
+              child: Text(
+                userName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                ),
+              ),
+            ),
+          ],
+        ),
         toolbarHeight: 70,
-        backgroundColor: AppColors.darkGrey,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         centerTitle: false,
       ),
-      floatingActionButton: myIndex == 0 // Show FAB only on Home screen
-          ? FloatingActionButton(
-        backgroundColor: AppColors.darkGrey,
-        onPressed: () {
-          Get.dialog(AddTrainingScreen(trainingType: "Chest",
-          ));
-        },
-        child: const Icon(Icons.add, color: AppColors.white),
-      )
-          : null,
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppColors.darkGrey,
-        type: BottomNavigationBarType.fixed,
-        iconSize: 28,
-        showSelectedLabels: false,
-        selectedLabelStyle: const TextStyle(color: Colors.white),
-        showUnselectedLabels: false,
-        currentIndex: myIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, color: AppColors.white),
-            label: "Home",
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: AppColors.glassBorder,
+              width: 0.5,
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calculate, color: AppColors.white),
-            label: "BMR",
+        ),
+        child: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: BottomNavigationBar(
+              backgroundColor: AppColors.darkerGrey.withOpacity(0.85),
+              type: BottomNavigationBarType.fixed,
+              iconSize: 26,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
+              selectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+              unselectedLabelStyle: const TextStyle(fontSize: 11),
+              selectedItemColor: AppColors.accentCyan,
+              unselectedItemColor: AppColors.textTertiary,
+              currentIndex: myIndex,
+              onTap: _onItemTapped,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.fitness_center_rounded),
+                  activeIcon: Icon(Icons.fitness_center_rounded),
+                  label: "Trainings",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.calculate_outlined),
+                  activeIcon: Icon(Icons.calculate_rounded),
+                  label: "BMR",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.account_circle_outlined),
+                  activeIcon: Icon(Icons.account_circle_rounded),
+                  label: "Profile",
+                ),
+              ],
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined, color: AppColors.white),
-            label: "Profile",
-          ),
-        ],
+        ),
       ),
-
       backgroundColor: AppColors.darkerGrey,
       body: IndexedStack(
         index: myIndex,

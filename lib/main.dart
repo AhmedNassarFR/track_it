@@ -4,28 +4,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:track_it/views/HomePage.dart';
 import 'package:track_it/views/RegisterPage.dart';
 
-import 'models/TrainingModel.dart';
-
-
 SharedPreferences? sharedPreferences;
-List<TrainingModel> trainingList = [];
-
 
 Future<bool> checkRegistration() async {
-
-  
-  // Example of checking SharedPreferences for registration data
   String? userName = sharedPreferences?.getString("name");
   return userName != null && userName.isNotEmpty;
 }
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  sharedPreferences= await SharedPreferences.getInstance();
+  sharedPreferences = await SharedPreferences.getInstance();
   bool registered = await checkRegistration();
 
-  runApp( MyApp(registered: registered,));
+  runApp(MyApp(registered: registered));
 }
 
 class MyApp extends StatelessWidget {
@@ -39,12 +30,21 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Track It',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xff0D0D0D),
+        primaryColor: const Color(0xff00D4FF),
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xff00D4FF),
+          secondary: Color(0xff7B2FFF),
+          surface: Color(0xff1A1A2E),
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        fontFamily: 'Roboto',
       ),
-      home: registered ? HomePage() : RegisterPage(),
-
+      home: registered ? const HomePage() : RegisterPage(),
     );
   }
 }
-
-

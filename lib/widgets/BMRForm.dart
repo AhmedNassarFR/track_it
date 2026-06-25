@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../AppColors.dart';
+import '../components/GlassContainer.dart';
 
 class BMRForm extends StatefulWidget {
   const BMRForm({Key? key}) : super(key: key);
@@ -61,187 +62,254 @@ class _BMRFormState extends State<BMRForm> {
     }
   }
 
+  InputDecoration _glassInputDecoration(String label) {
+    return InputDecoration(
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.06),
+      labelText: label,
+      labelStyle: TextStyle(color: AppColors.textSecondary),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: AppColors.glassBorder),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: AppColors.accentCyan.withOpacity(0.5)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Radio(
-              value: Gender.male,
-              groupValue: selectedGender,
-              onChanged: (value) {
-                setState(() {
-                  selectedGender = value as Gender;
-                });
-              },
-            ),
-            Text(
-              'Male',
-              style: TextStyle(fontSize: 16, color: AppColors.white),
-            ),
-            Radio(
-              value: Gender.female,
-              groupValue: selectedGender,
-              onChanged: (value) {
-                setState(() {
-                  selectedGender = value as Gender;
-                });
-              },
-            ),
-            Text(
-              'Female',
-              style: TextStyle(fontSize: 16, color: AppColors.white),
-            ),
-          ],
-        ),
-        SizedBox(height: 16),
-        TextField(
-          controller: ageController,
-          keyboardType: TextInputType.number,
-          style: TextStyle(color: AppColors.white),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: AppColors.darkGrey,
-            labelText: 'Age',
-            labelStyle: TextStyle(color: AppColors.white),
-            border: OutlineInputBorder(
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        SizedBox(height: 16),
-        TextField(
-          controller: heightController,
-          keyboardType: TextInputType.numberWithOptions(decimal: true),
-          style: TextStyle(color: AppColors.white),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: AppColors.darkGrey,
-            labelText: 'Height (cm)',
-            labelStyle: TextStyle(color: AppColors.white),
-            border: OutlineInputBorder(
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        SizedBox(height: 16),
-        TextField(
-          controller: weightController,
-          keyboardType: TextInputType.numberWithOptions(decimal: true),
-          style: TextStyle(color: AppColors.white),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: AppColors.darkGrey,
-            labelText: 'Weight (kg)',
-            labelStyle: TextStyle(color: AppColors.white),
-            border: OutlineInputBorder(
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-        SizedBox(height: 16),
-        Text(
-          ' Activity Level',
-          style: TextStyle(
-            color: AppColors.white,
-            fontSize: 15,
-          ),
-        ),
-        SizedBox(height: 5),
-        SingleChildScrollView(
-          scrollDirection: Axis.vertical,
+        // Gender selection
+        GlassContainer(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                child: DropdownButtonFormField<ActivityLevel>(
-                  dropdownColor: AppColors.darkGrey,
-                  isExpanded: true,
-                  value: selectedActivityLevel,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedActivityLevel = value!;
-                    });
-                  },
-                  items: ActivityLevel.values.map((level) {
-                    return DropdownMenuItem(
-                      value: level,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.darkGrey,
-                          border: Border(bottom: BorderSide.none),
-                        ),
-                        child: Text(
-                          getActivityLevelText(level),
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: AppColors.white),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: AppColors.darkGrey,
-                    // labelText: 'Activity Level',
-                    labelStyle: TextStyle(color: AppColors.white),
-                    border: OutlineInputBorder(
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
+              Radio(
+                value: Gender.male,
+                groupValue: selectedGender,
+                activeColor: AppColors.accentCyan,
+                fillColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return AppColors.accentCyan;
+                  }
+                  return AppColors.textSecondary;
+                }),
+                onChanged: (value) {
+                  setState(() {
+                    selectedGender = value as Gender;
+                  });
+                },
+              ),
+              const Text(
+                'Male',
+                style: TextStyle(fontSize: 16, color: AppColors.white),
+              ),
+              const SizedBox(width: 20),
+              Radio(
+                value: Gender.female,
+                groupValue: selectedGender,
+                activeColor: AppColors.accentPink,
+                fillColor: MaterialStateProperty.resolveWith((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return AppColors.accentPink;
+                  }
+                  return AppColors.textSecondary;
+                }),
+                onChanged: (value) {
+                  setState(() {
+                    selectedGender = value as Gender;
+                  });
+                },
+              ),
+              const Text(
+                'Female',
+                style: TextStyle(fontSize: 16, color: AppColors.white),
               ),
             ],
           ),
         ),
-        SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: calculateTDEE,
-          child: Text(
-            'Calculate TDEE',
-            style: TextStyle(color: AppColors.white),
+
+        // Input fields
+        TextField(
+          controller: ageController,
+          keyboardType: TextInputType.number,
+          style: const TextStyle(color: AppColors.white),
+          decoration: _glassInputDecoration('Age'),
+        ),
+        const SizedBox(height: 14),
+        TextField(
+          controller: heightController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          style: const TextStyle(color: AppColors.white),
+          decoration: _glassInputDecoration('Height (cm)'),
+        ),
+        const SizedBox(height: 14),
+        TextField(
+          controller: weightController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          style: const TextStyle(color: AppColors.white),
+          decoration: _glassInputDecoration('Weight (kg)'),
+        ),
+        const SizedBox(height: 16),
+
+        // Activity level
+        Text(
+          'Activity Level',
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 14,
           ),
-          style: ElevatedButton.styleFrom(
-            primary: AppColors.darkGrey,
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.06),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.glassBorder),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: DropdownButtonFormField<ActivityLevel>(
+              dropdownColor: AppColors.darkGrey,
+              isExpanded: true,
+              value: selectedActivityLevel,
+              onChanged: (value) {
+                setState(() {
+                  selectedActivityLevel = value!;
+                });
+              },
+              items: ActivityLevel.values.map((level) {
+                return DropdownMenuItem(
+                  value: level,
+                  child: Text(
+                    getActivityLevelText(level),
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: AppColors.white),
+                  ),
+                );
+              }).toList(),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+              icon: Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+              borderRadius: BorderRadius.circular(14),
+            ),
           ),
         ),
-        SizedBox(height: 16),
-        Text(
-          'Your Basal Metabolic Rate (BMR) is:',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.white),
+        const SizedBox(height: 20),
+
+        // Calculate button
+        GestureDetector(
+          onTap: calculateTDEE,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              gradient: AppColors.accentGradient,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accentCyan.withOpacity(0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: const Center(
+              child: Text(
+                'Calculate TDEE',
+                style: TextStyle(
+                  color: AppColors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
         ),
-        SizedBox(height: 8),
-        Text(
-          bmrResult.toStringAsFixed(2),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.white),
-        ),
-        SizedBox(height: 16),
-        Text(
-          'Your Total Daily Energy Expenditure (TDEE) is:',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.white),
-        ),
-        SizedBox(height: 8),
-        Text(
-          tdeeResult.toStringAsFixed(2),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: AppColors.white),
-        ),
+        const SizedBox(height: 20),
+
+        // Results
+        if (bmrResult > 0) ...[
+          GlassContainer(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: Column(
+              children: [
+                Text(
+                  'Basal Metabolic Rate (BMR)',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ShaderMask(
+                  shaderCallback: (bounds) =>
+                      AppColors.accentGradient.createShader(bounds),
+                  child: Text(
+                    bmrResult.toStringAsFixed(0),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Text(
+                  'calories/day',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GlassContainer(
+            child: Column(
+              children: [
+                Text(
+                  'Total Daily Energy Expenditure (TDEE)',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ShaderMask(
+                  shaderCallback: (bounds) =>
+                      AppColors.warmGradient.createShader(bounds),
+                  child: Text(
+                    tdeeResult.toStringAsFixed(0),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Text(
+                  'calories/day',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
