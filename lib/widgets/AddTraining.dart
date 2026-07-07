@@ -4,6 +4,7 @@ import 'package:track_it/AppColors.dart';
 import 'package:track_it/components/GlassContainer.dart';
 import 'package:track_it/models/TrainingModel.dart';
 import 'package:track_it/controllers/TrainingController.dart';
+import 'package:track_it/controllers/SettingsController.dart';
 
 class AddTrainingScreen extends StatefulWidget {
   final String trainingType;
@@ -33,6 +34,7 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
   @override
   Widget build(BuildContext context) {
     final TrainingController trainingController = Get.find();
+    final SettingsController settingsController = Get.find<SettingsController>();
 
     return Center(
       child: SingleChildScrollView(
@@ -68,12 +70,12 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
                   const SizedBox(height: 14),
 
                   // Weight
-                  _buildGlassTextField(
+                  Obx(() => _buildGlassTextField(
                     controller: weight,
-                    hint: 'Weight (kg)',
+                    hint: 'Weight (${settingsController.unitLabel})',
                     error: weightError,
                     keyboardType: TextInputType.number,
-                  ),
+                  )),
                   const SizedBox(height: 14),
 
                   // Reps
@@ -162,7 +164,7 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
                             final TrainingModel newTraining = TrainingModel(
                               trainingType: selectedValue,
                               trainingName: trainingName.text,
-                              weight: double.parse(weight.text),
+                              weight: settingsController.toKg(double.parse(weight.text)),
                               reps: int.parse(reps.text),
                             );
                             trainingController.addTraining(newTraining);

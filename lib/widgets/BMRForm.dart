@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../AppColors.dart';
 import '../components/GlassContainer.dart';
+import '../controllers/ProfileController.dart';
 
 class BMRForm extends StatefulWidget {
-  const BMRForm({Key? key}) : super(key: key);
+  final VoidCallback? onAssessmentComplete;
+
+  const BMRForm({Key? key, this.onAssessmentComplete}) : super(key: key);
 
   @override
   _BMRFormState createState() => _BMRFormState();
@@ -13,29 +18,64 @@ class _BMRFormState extends State<BMRForm> {
   final TextEditingController ageController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   final TextEditingController heightController = TextEditingController();
-  double bmrResult = 0.0;
-  double tdeeResult = 0.0;
   Gender selectedGender = Gender.male;
-  ActivityLevel selectedActivityLevel =
-      ActivityLevel.sedentary; // Default to sedentary
 
-  void calculateTDEE() {
+  @override
+  void initState() {
+    super.initState();
+    _prefillFromProfile();
+  }
+
+  void _prefillFromProfile() {
+    try {
+      final profileController = Get.find<ProfileController>();
+      if (profileController.userAge.value.isNotEmpty) {
+        ageController.text = profileController.userAge.value;
+      }
+      if (profileController.userWeight.value.isNotEmpty) {
+        weightController.text = profileController.userWeight.value;
+      }
+      if (profileController.userHeight.value.isNotEmpty) {
+        heightController.text = profileController.userHeight.value;
+      }
+      if (profileController.userGender.value == 'female') {
+        selectedGender = Gender.female;
+      } else {
+        selectedGender = Gender.male;
+      }
+      setState(() {});
+    } catch (_) {
+      // ProfileController not available, no prefill
+    }
+  }
+
+  void _calculateAndSave() async {
     int age = int.tryParse(ageController.text) ?? 0;
     double weight = double.tryParse(weightController.text) ?? 0.0;
     double height = double.tryParse(heightController.text) ?? 0.0;
 
-    if (age > 0 && weight > 0 && height > 0) {
-      // Calculate BMR based on selected gender
-      bmrResult = calculateBMRValue(weight, height, age, selectedGender);
-
-      // Calculate TDEE based on BMR and selected activity level
-      tdeeResult = calculateTDEEValue(bmrResult, selectedActivityLevel);
-    } else {
-      // If any field is not valid, set results to 0.0
-      bmrResult = 0.0;
-      tdeeResult = 0.0;
+    if (age <= 0 || weight <= 0 || height <= 0) {
+      Get.snackbar(
+        'Invalid Input',
+        'Please fill in all fields with valid values.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.lightGrey,
+        colorText: AppColors.white,
+      );
+      return;
     }
-    setState(() {}); // Update UI with new results
+
+    double bmr = calculateBMRValue(weight, height, age, selectedGender);
+
+    // Save assessment to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('bmr_result', bmr);
+    await prefs.setString('bmr_gender', selectedGender == Gender.male ? 'male' : 'female');
+    await prefs.setString('bmr_height', height.toString());
+    await prefs.setString('bmr_age', age.toString());
+    await prefs.setString('bmr_weight', weight.toString());
+
+    widget.onAssessmentComplete?.call();
   }
 
   double calculateBMRValue(
@@ -44,21 +84,6 @@ class _BMRFormState extends State<BMRForm> {
       return 10 * weight + 6.25 * height - 5 * age + 5;
     } else {
       return 10 * weight + 6.25 * height - 5 * age - 161;
-    }
-  }
-
-  double calculateTDEEValue(double bmr, ActivityLevel activityLevel) {
-    switch (activityLevel) {
-      case ActivityLevel.sedentary:
-        return bmr * 1.2;
-      case ActivityLevel.lightlyActive:
-        return bmr * 1.375;
-      case ActivityLevel.moderatelyActive:
-        return bmr * 1.55;
-      case ActivityLevel.veryActive:
-        return bmr * 1.725;
-      case ActivityLevel.superActive:
-        return bmr * 1.9;
     }
   }
 
@@ -95,8 +120,8 @@ class _BMRFormState extends State<BMRForm> {
                 value: Gender.male,
                 groupValue: selectedGender,
                 activeColor: AppColors.accentCyan,
-                fillColor: MaterialStateProperty.resolveWith((states) {
-                  if (states.contains(MaterialState.selected)) {
+                fillColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.selected)) {
                     return AppColors.accentCyan;
                   }
                   return AppColors.textSecondary;
@@ -116,8 +141,8 @@ class _BMRFormState extends State<BMRForm> {
                 value: Gender.female,
                 groupValue: selectedGender,
                 activeColor: AppColors.accentPink,
-                fillColor: MaterialStateProperty.resolveWith((states) {
-                  if (states.contains(MaterialState.selected)) {
+                fillColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.selected)) {
                     return AppColors.accentPink;
                   }
                   return AppColors.textSecondary;
@@ -157,58 +182,11 @@ class _BMRFormState extends State<BMRForm> {
           style: const TextStyle(color: AppColors.white),
           decoration: _glassInputDecoration('Weight (kg)'),
         ),
-        const SizedBox(height: 16),
-
-        // Activity level
-        Text(
-          'Activity Level',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.glassBorder),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: DropdownButtonFormField<ActivityLevel>(
-              dropdownColor: AppColors.darkGrey,
-              isExpanded: true,
-              value: selectedActivityLevel,
-              onChanged: (value) {
-                setState(() {
-                  selectedActivityLevel = value!;
-                });
-              },
-              items: ActivityLevel.values.map((level) {
-                return DropdownMenuItem(
-                  value: level,
-                  child: Text(
-                    getActivityLevelText(level),
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: AppColors.white),
-                  ),
-                );
-              }).toList(),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-              ),
-              icon: Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
-              borderRadius: BorderRadius.circular(14),
-            ),
-          ),
-        ),
         const SizedBox(height: 20),
 
         // Calculate button
         GestureDetector(
-          onTap: calculateTDEE,
+          onTap: _calculateAndSave,
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
@@ -224,7 +202,7 @@ class _BMRFormState extends State<BMRForm> {
             ),
             child: const Center(
               child: Text(
-                'Calculate TDEE',
+                'Calculate BMR',
                 style: TextStyle(
                   color: AppColors.white,
                   fontSize: 16,
@@ -234,82 +212,6 @@ class _BMRFormState extends State<BMRForm> {
             ),
           ),
         ),
-        const SizedBox(height: 20),
-
-        // Results
-        if (bmrResult > 0) ...[
-          GlassContainer(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: Column(
-              children: [
-                Text(
-                  'Basal Metabolic Rate (BMR)',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ShaderMask(
-                  shaderCallback: (bounds) =>
-                      AppColors.accentGradient.createShader(bounds),
-                  child: Text(
-                    bmrResult.toStringAsFixed(0),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                Text(
-                  'calories/day',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textTertiary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          GlassContainer(
-            child: Column(
-              children: [
-                Text(
-                  'Total Daily Energy Expenditure (TDEE)',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ShaderMask(
-                  shaderCallback: (bounds) =>
-                      AppColors.warmGradient.createShader(bounds),
-                  child: Text(
-                    tdeeResult.toStringAsFixed(0),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-                Text(
-                  'calories/day',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textTertiary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -318,27 +220,4 @@ class _BMRFormState extends State<BMRForm> {
 enum Gender {
   male,
   female,
-}
-
-enum ActivityLevel {
-  sedentary,
-  lightlyActive,
-  moderatelyActive,
-  veryActive,
-  superActive,
-}
-
-String getActivityLevelText(ActivityLevel level) {
-  switch (level) {
-    case ActivityLevel.sedentary:
-      return 'Sedentary (little or no exercise)';
-    case ActivityLevel.lightlyActive:
-      return 'Lightly active (light exercise/sports 1-3 days/week)';
-    case ActivityLevel.moderatelyActive:
-      return 'Moderately active (moderate exercise/sports 3-5 days/week)';
-    case ActivityLevel.veryActive:
-      return 'Very active (hard exercise/sports 6-7 days a week)';
-    case ActivityLevel.superActive:
-      return 'Super active (very hard exercise, physical job, or training twice a day)';
-  }
 }

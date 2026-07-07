@@ -1,8 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:track_it/models/TrainingModel.dart';
 import 'package:track_it/AppColors.dart';
 import 'package:track_it/components/GlassContainer.dart';
+import 'package:track_it/controllers/SettingsController.dart';
 
 class HistoryScreen extends StatelessWidget {
   final TrainingModel training;
@@ -23,6 +25,9 @@ class HistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final SettingsController settingsController =
+        Get.find<SettingsController>();
+
     return Scaffold(
       appBar: AppBar(
         flexibleSpace: Container(
@@ -74,40 +79,122 @@ class HistoryScreen extends StatelessWidget {
       backgroundColor: AppColors.darkerGrey,
       body: Column(
         children: [
-          // Current stats card
+          // Current stats card — includes name + weight + reps
           Padding(
             padding: const EdgeInsets.all(16),
             child: GlassContainer(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _statColumn(
-                    'Current Weight',
-                    '${training.weight % 1 == 0 ? training.weight.toInt() : training.weight} kg',
-                    AppColors.accentCyan,
-                  ),
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: AppColors.glassBorder,
-                  ),
-                  _statColumn(
-                    'Current Reps',
-                    '${training.reps}',
-                    AppColors.accentPurple,
-                  ),
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: AppColors.glassBorder,
-                  ),
-                  _statColumn(
-                    'Total Logs',
-                    '${training.history.length}',
-                    AppColors.accentPink,
-                  ),
-                ],
-              ),
+              child: Obx(() => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Training name
+                      ShaderMask(
+                        shaderCallback: (bounds) =>
+                            AppColors.accentGradient.createShader(bounds),
+                        child: Text(
+                          training.trainingName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      // Stats row
+                      Row(
+                        children: [
+                          // Weight column (both units)
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Weight',
+                                  style: TextStyle(
+                                    color: AppColors.textTertiary,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  settingsController
+                                      .displayWeightWithUnit(training.weight),
+                                  style: TextStyle(
+                                    color: AppColors.accentCyan,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                Text(
+                                  settingsController
+                                      .secondaryWeightWithUnit(training.weight),
+                                  style: TextStyle(
+                                    color: AppColors.textTertiary,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            width: 1,
+                            height: 44,
+                            color: AppColors.glassBorder,
+                          ),
+                          // Reps column
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Current Reps',
+                                  style: TextStyle(
+                                    color: AppColors.textTertiary,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${training.reps}',
+                                  style: TextStyle(
+                                    color: AppColors.accentPurple,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            width: 1,
+                            height: 44,
+                            color: AppColors.glassBorder,
+                          ),
+                          // Total logs column
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Total Logs',
+                                  style: TextStyle(
+                                    color: AppColors.textTertiary,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${training.history.length}',
+                                  style: TextStyle(
+                                    color: AppColors.accentPink,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )),
             ),
           ),
 
@@ -191,49 +278,61 @@ class HistoryScreen extends StatelessWidget {
                               const SizedBox(width: 14),
                               // Weight & Reps
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
+                                child: Obx(() => Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          '${historyWeight % 1 == 0 ? historyWeight.toInt() : historyWeight} kg',
-                                          style: const TextStyle(
-                                            color: AppColors.white,
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        if (historyReps > 0) ...[
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.symmetric(
-                                                    horizontal: 8),
-                                            child: Text(
-                                              '·',
-                                              style: TextStyle(
-                                                color:
-                                                    AppColors.textSecondary,
+                                        Row(
+                                          children: [
+                                            Text(
+                                              settingsController
+                                                  .displayWeightWithUnit(
+                                                      historyWeight),
+                                              style: const TextStyle(
+                                                color: AppColors.white,
                                                 fontSize: 17,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.w600,
                                               ),
                                             ),
+                                            if (historyReps > 0) ...[
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 8),
+                                                child: Text(
+                                                  '·',
+                                                  style: TextStyle(
+                                                    color: AppColors
+                                                        .textSecondary,
+                                                    fontSize: 17,
+                                                    fontWeight:
+                                                        FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              Text(
+                                                '$historyReps reps',
+                                                style: TextStyle(
+                                                  color: AppColors.accentPurple
+                                                      .withOpacity(0.85),
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        Text(
+                                          settingsController
+                                              .secondaryWeightWithUnit(
+                                                  historyWeight),
+                                          style: TextStyle(
+                                            color: AppColors.textTertiary,
+                                            fontSize: 11,
                                           ),
-                                          Text(
-                                            '$historyReps reps',
-                                            style: TextStyle(
-                                              color: AppColors.accentPurple
-                                                  .withOpacity(0.85),
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
+                                        ),
                                       ],
-                                    ),
-                                  ],
-                                ),
+                                    )),
                               ),
                               // Date
                               Text(
@@ -252,29 +351,6 @@ class HistoryScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _statColumn(String label, String value, Color color) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: AppColors.textTertiary,
-            fontSize: 11,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -114,10 +114,18 @@ class CloudSyncService {
     return doc.data();
   }
 
+  static Future<void> signOut() async {
+    if (FirebaseService.isReady) {
+      await _auth.signOut();
+    }
+  }
+
   static Future<void> saveProfile({
     required String name,
     required String age,
     required String weight,
+    String? gender,
+    String? height,
     Uint8List? imageBytes,
     String? existingPhotoUrl,
   }) async {
@@ -135,6 +143,8 @@ class CloudSyncService {
         'name': name,
         'age': age,
         'weight': weight,
+        if (gender != null) 'gender': gender,
+        if (height != null) 'height': height,
         if (photoUrl != null) 'photoUrl': photoUrl,
         'updatedAt': FieldValue.serverTimestamp(),
       },

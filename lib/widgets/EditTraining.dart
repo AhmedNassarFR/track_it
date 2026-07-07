@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:track_it/controllers/TrainingController.dart';
+import 'package:track_it/controllers/SettingsController.dart';
 import 'package:track_it/AppColors.dart';
 import 'package:track_it/components/GlassContainer.dart';
 
@@ -23,16 +24,19 @@ class _EditWeightScreenState extends State<EditWeightScreen> {
   void initState() {
     super.initState();
     final TrainingController trainingController = Get.find();
+    final SettingsController settingsController = Get.find<SettingsController>();
     final training = trainingController.trainingList[widget.index];
-    weightController.text = training.weight % 1 == 0
-        ? training.weight.toInt().toString()
-        : training.weight.toString();
+    final displayWeight = settingsController.fromKg(training.weight);
+    weightController.text = displayWeight % 1 == 0
+        ? displayWeight.toInt().toString()
+        : displayWeight.toStringAsFixed(1);
     repsController.text = training.reps.toString();
   }
 
   @override
   Widget build(BuildContext context) {
     final TrainingController trainingController = Get.find();
+    final SettingsController settingsController = Get.find<SettingsController>();
 
     return Center(
       child: SingleChildScrollView(
@@ -67,7 +71,7 @@ class _EditWeightScreenState extends State<EditWeightScreen> {
                   const SizedBox(height: 24),
                   _buildGlassTextField(
                     controller: weightController,
-                    hint: 'New weight (kg)',
+                    hint: 'New weight (${settingsController.unitLabel})',
                     error: weightError,
                   ),
                   const SizedBox(height: 14),
@@ -103,7 +107,7 @@ class _EditWeightScreenState extends State<EditWeightScreen> {
                           if (weightError == null && repsError == null) {
                             trainingController.logNewSet(
                               widget.index,
-                              double.parse(weightController.text),
+                              settingsController.toKg(double.parse(weightController.text)),
                               int.parse(repsController.text),
                             );
                             Get.back();

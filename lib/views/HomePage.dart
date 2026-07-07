@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:track_it/AppColors.dart';
 import 'package:track_it/controllers/ProfileController.dart';
+import 'package:track_it/controllers/SettingsController.dart';
 import 'package:track_it/views/ProfilePage.dart';
+import 'package:track_it/views/SettingsPage.dart';
 import 'package:track_it/views/TrainingTypeScreen.dart';
 import 'package:track_it/controllers/TrainingController.dart';
 
@@ -20,6 +22,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TrainingController trainingController = Get.put(TrainingController());
   final ProfileController profileController = Get.put(ProfileController());
+  final SettingsController settingsController = Get.put(SettingsController());
 
   int myIndex = 0;
 
@@ -95,6 +98,20 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              onPressed: () => Get.to(() => SettingsPage()),
+              icon: const Icon(
+                Icons.settings_outlined,
+                color: AppColors.white,
+                size: 24,
+              ),
+              tooltip: 'Settings',
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
