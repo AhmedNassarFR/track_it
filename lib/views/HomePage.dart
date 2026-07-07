@@ -1,13 +1,13 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:track_it/AppColors.dart';
 import 'package:track_it/controllers/ProfileController.dart';
 import 'package:track_it/controllers/SettingsController.dart';
+import 'package:track_it/controllers/TrainingController.dart';
 import 'package:track_it/views/ProfilePage.dart';
 import 'package:track_it/views/SettingsPage.dart';
 import 'package:track_it/views/TrainingTypeScreen.dart';
-import 'package:track_it/controllers/TrainingController.dart';
+import 'package:track_it/widgets/AddTraining.dart';
 
 import '../main.dart';
 import 'BMRCalculator.dart';
@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
   @override
-  _HomePageState createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
@@ -25,6 +25,7 @@ class _HomePageState extends State<HomePage> {
   final SettingsController settingsController = Get.put(SettingsController());
 
   int myIndex = 0;
+  late String trainingType = "";
 
   void _onItemTapped(int index) {
     setState(() {
@@ -34,75 +35,60 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final userName =
-        sharedPreferences?.getString("name") ?? "";
+    final userName = profileController.userName.value.isNotEmpty
+        ? profileController.userName.value
+        : (sharedPreferences?.getString("name") ?? "");
 
     final List<Widget> widgetList = [
-      TrainingTypeScreen(),
+      const TrainingTypeScreen(),
       const BMRCalculator(),
-      ProfilePage(),
+      const ProfilePage(),
     ];
 
     return Scaffold(
-      extendBody: true,
       appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.accentCyan.withOpacity(0.15),
-                AppColors.accentPurple.withOpacity(0.15),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Hello,',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
+              "Hello, ${userName.isEmpty ? 'Athlete' : userName}",
+              style: const TextStyle(
+                color: AppColors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 20,
               ),
             ),
             Obx(() {
               final name = profileController.userName.value.isNotEmpty
                   ? profileController.userName.value
                   : (sharedPreferences?.getString("name") ?? "Athlete");
-              return ShaderMask(
-                shaderCallback: (bounds) =>
-                    AppColors.accentGradient.createShader(bounds),
-                child: Text(
-                  name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
-                  ),
+              return Text(
+                name,
+                style: const TextStyle(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
                 ),
               );
             }),
+            Text(
+              "Track your lifts with cloud sync",
+              style: TextStyle(
+                color: AppColors.white.withOpacity(0.72),
+                fontSize: 12,
+              ),
+            ),
           ],
         ),
-        toolbarHeight: 70,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        toolbarHeight: 76,
+        backgroundColor: AppColors.darkGrey,
         centerTitle: false,
+        elevation: 0,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: IconButton(
-              onPressed: () => Get.to(() => SettingsPage()),
+              onPressed: () => Get.to(() => const SettingsPage()),
               icon: const Icon(
                 Icons.settings_outlined,
                 color: AppColors.white,
@@ -113,53 +99,39 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: AppColors.glassBorder,
-              width: 0.5,
-            ),
+      floatingActionButton: myIndex == 0
+          ? FloatingActionButton(
+              backgroundColor: AppColors.darkGrey,
+              tooltip: 'Add training',
+              onPressed: () {
+                Get.dialog(AddTrainingScreen(trainingType: trainingType.isNotEmpty ? trainingType : "Chest"));
+              },
+              child: const Icon(Icons.add, color: AppColors.white),
+            )
+          : null,
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: AppColors.darkGrey,
+        indicatorColor: AppColors.lightPurple.withOpacity(0.22),
+        selectedIndex: myIndex,
+        onDestinationSelected: _onItemTapped,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.fitness_center_outlined, color: AppColors.white),
+            selectedIcon: Icon(Icons.fitness_center, color: AppColors.lightPurple),
+            label: "Trainings",
           ),
-        ),
-        child: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: BottomNavigationBar(
-              backgroundColor: AppColors.darkerGrey.withOpacity(0.85),
-              type: BottomNavigationBarType.fixed,
-              iconSize: 26,
-              showSelectedLabels: true,
-              showUnselectedLabels: true,
-              selectedLabelStyle: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-              ),
-              unselectedLabelStyle: const TextStyle(fontSize: 11),
-              selectedItemColor: AppColors.accentCyan,
-              unselectedItemColor: AppColors.textTertiary,
-              currentIndex: myIndex,
-              onTap: _onItemTapped,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.fitness_center_rounded),
-                  activeIcon: Icon(Icons.fitness_center_rounded),
-                  label: "Trainings",
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.calculate_outlined),
-                  activeIcon: Icon(Icons.calculate_rounded),
-                  label: "BMR",
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.account_circle_outlined),
-                  activeIcon: Icon(Icons.account_circle_rounded),
-                  label: "Profile",
-                ),
-              ],
-            ),
+          NavigationDestination(
+            icon: Icon(Icons.calculate_outlined, color: AppColors.white),
+            selectedIcon: Icon(Icons.calculate, color: AppColors.lightPurple),
+            label: "BMR",
           ),
-        ),
+          NavigationDestination(
+            icon: Icon(Icons.account_circle_outlined, color: AppColors.white),
+            selectedIcon: Icon(Icons.account_circle, color: AppColors.lightPurple),
+            label: "Profile",
+          ),
+        ],
       ),
       backgroundColor: AppColors.darkerGrey,
       body: IndexedStack(

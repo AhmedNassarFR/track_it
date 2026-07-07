@@ -386,7 +386,7 @@ Widget _buildTextField(
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(14)),
-        borderSide: BorderSide(color: AppColors.accentCyan.withOpacity(0.5)),
+        borderSide: BorderSide(color: AppColors.accentPurple.withOpacity(0.5)),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(14)),
@@ -430,15 +430,8 @@ Widget _accentButton(String label, VoidCallback onTap) {
     child: Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        gradient: AppColors.accentGradient,
+        color: AppColors.accentPurple,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.accentCyan.withOpacity(0.25),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
       ),
       child: Center(
         child: Text(

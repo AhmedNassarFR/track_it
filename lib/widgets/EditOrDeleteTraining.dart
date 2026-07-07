@@ -26,7 +26,7 @@ class EditOrDeleteTraining extends StatelessWidget {
                 // Title
                 ShaderMask(
                   shaderCallback: (bounds) =>
-                      AppColors.accentGradient.createShader(bounds),
+                      const LinearGradient(colors: [Color(0xff7B2FFF), Color(0xff7B2FFF)]).createShader(bounds),
                   child: const Text(
                     'Exercise Options',
                     style: TextStyle(

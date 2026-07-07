@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:track_it/components/MyButton.dart';
 import 'package:track_it/components/GlassContainer.dart';
+import 'package:track_it/components/MyButton.dart';
 import '../AppColors.dart';
 import '../controllers/ProfileController.dart';
-import 'HomePage.dart';
 
 class ProfilePage extends StatelessWidget {
   final ProfileController profileController = Get.put(ProfileController());
+
+  ProfilePage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,56 +16,38 @@ class ProfilePage extends StatelessWidget {
       backgroundColor: AppColors.darkerGrey,
       body: ListView(
         shrinkWrap: true,
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 30.0),
         children: [
-          const SizedBox(height: 40),
-
-          // Avatar
+          const SizedBox(height: 50),
           Center(
             child: GestureDetector(
               onTap: profileController.pickImage,
-              child: Obx(() => Stack(
-                    alignment: AlignmentDirectional.bottomEnd,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: AppColors.accentGradient,
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.accentCyan.withOpacity(0.2),
-                              blurRadius: 20,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        padding: const EdgeInsets.all(3),
-                        child: CircleAvatar(
-                          backgroundColor: AppColors.darkGrey,
-                          radius: 70,
-                          backgroundImage: profileController.profileImage.value,
-                          child: profileController.profileImage.value == null
-                              ? const Icon(Icons.camera_alt,
-                                  color: AppColors.white, size: 40)
-                              : null,
-                        ),
+              child: Obx(
+                () => Stack(
+                  alignment: AlignmentDirectional.bottomEnd,
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: AppColors.darkGrey,
+                      radius: 75,
+                      backgroundImage: profileController.profileImage.value,
+                      child: profileController.profileImage.value == null
+                          ? const Icon(Icons.camera_alt, color: AppColors.white, size: 50)
+                          : null,
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentPurple,
+                        shape: BoxShape.circle,
                       ),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.accentGradient,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.edit,
-                            color: AppColors.white, size: 16),
-                      ),
-                    ],
-                  )),
+                      child: const Icon(Icons.edit, color: AppColors.white, size: 18),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 30),
-
-          // Gender selector
           GlassContainer(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,39 +61,35 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Obx(() => Row(
-                      children: [
-                        Expanded(
-                          child: _genderOption(
-                            label: 'Male',
-                            icon: Icons.male_rounded,
-                            selected:
-                                profileController.userGender.value == 'male',
-                            color: AppColors.accentCyan,
-                            onTap: () =>
-                                profileController.userGender.value = 'male',
-                          ),
+                Obx(
+                  () => Row(
+                    children: [
+                      Expanded(
+                        child: _genderOption(
+                          label: 'Male',
+                          icon: Icons.male_rounded,
+                          selected: profileController.userGender.value == 'male',
+                          color: AppColors.accentCyan,
+                          onTap: () => profileController.userGender.value = 'male',
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _genderOption(
-                            label: 'Female',
-                            icon: Icons.female_rounded,
-                            selected:
-                                profileController.userGender.value == 'female',
-                            color: AppColors.accentPink,
-                            onTap: () =>
-                                profileController.userGender.value = 'female',
-                          ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _genderOption(
+                          label: 'Female',
+                          icon: Icons.female_rounded,
+                          selected: profileController.userGender.value == 'female',
+                          color: AppColors.accentPink,
+                          onTap: () => profileController.userGender.value = 'female',
                         ),
-                      ],
-                    )),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 14),
-
-          // Form fields in glass container
           GlassContainer(
             child: Column(
               children: [
@@ -143,11 +122,11 @@ class ProfilePage extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 24),
           MyButton(
-            height: 52,
+            height: 50,
             width: 200,
-            color: AppColors.darkGrey,
+            color: AppColors.accentPurple,
             onTap: () async {
               await profileController.saveUserData();
               Get.snackbar(
@@ -158,11 +137,7 @@ class ProfilePage extends StatelessWidget {
                 colorText: AppColors.white,
               );
             },
-            child: const Text("Save",
-                style: TextStyle(
-                    color: AppColors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16)),
+            child: const Text("Save", style: TextStyle(color: AppColors.white)),
           ),
         ],
       ),
@@ -210,36 +185,35 @@ class ProfilePage extends StatelessWidget {
   Widget _buildTextField({
     required RxString controller,
     required String hintText,
-    TextInputType keyboardType = TextInputType.text,
     IconData? icon,
+    TextInputType keyboardType = TextInputType.text,
   }) {
-    return Obx(() => TextField(
-          controller: TextEditingController(text: controller.value)
-            ..selection = TextSelection.fromPosition(
-                TextPosition(offset: controller.value.length)),
-          onChanged: (val) => controller.value = val,
-          style: const TextStyle(color: AppColors.white),
-          keyboardType: keyboardType,
-          textAlign: TextAlign.center,
-          decoration: InputDecoration(
-            prefixIcon: icon != null
-                ? Icon(icon, color: AppColors.textTertiary, size: 20)
-                : null,
-            fillColor: Colors.white.withOpacity(0.06),
-            filled: true,
-            hintText: hintText,
-            hintStyle:
-                TextStyle(color: AppColors.textSecondary, fontSize: 15),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: const BorderRadius.all(Radius.circular(14)),
-              borderSide: BorderSide(color: AppColors.glassBorder),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: const BorderRadius.all(Radius.circular(14)),
-              borderSide: BorderSide(
-                  color: AppColors.accentCyan.withOpacity(0.5)),
-            ),
+    return Obx(
+      () => TextField(
+        controller: TextEditingController(text: controller.value)
+          ..selection = TextSelection.fromPosition(
+            TextPosition(offset: controller.value.length),
           ),
-        ));
+        onChanged: (val) => controller.value = val,
+        style: const TextStyle(color: AppColors.white),
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          prefixIcon: icon != null ? Icon(icon, color: AppColors.textTertiary, size: 20) : null,
+          suffixIcon: const Icon(Icons.edit, color: AppColors.white, size: 20),
+          fillColor: Colors.white.withOpacity(0.06),
+          filled: true,
+          hintText: hintText,
+          hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: const BorderRadius.all(Radius.circular(14)),
+            borderSide: BorderSide(color: AppColors.glassBorder),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: const BorderRadius.all(Radius.circular(14)),
+            borderSide: BorderSide(color: AppColors.accentCyan.withOpacity(0.5)),
+          ),
+        ),
+      ),
+    );
   }
 }

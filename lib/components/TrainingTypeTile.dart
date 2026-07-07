@@ -31,7 +31,7 @@ class TrainingTypeTile extends StatelessWidget {
                 width: 4,
                 height: 36,
                 decoration: BoxDecoration(
-                  gradient: AppColors.accentGradient,
+                  color: AppColors.accentPurple,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -53,16 +53,16 @@ class TrainingTypeTile extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.accentCyan.withOpacity(0.15),
+                    color: AppColors.accentPurple.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: AppColors.accentCyan.withOpacity(0.3),
+                      color: AppColors.accentPurple.withOpacity(0.3),
                     ),
                   ),
                   child: Text(
                     '$exerciseCount',
                     style: TextStyle(
-                      color: AppColors.accentCyan,
+                      color: AppColors.accentPurple,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),

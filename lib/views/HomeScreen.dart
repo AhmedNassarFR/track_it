@@ -31,29 +31,16 @@ class HomePageContent extends StatelessWidget {
       }).toList();
 
       return Scaffold(
-        floatingActionButton: Container(
-          decoration: BoxDecoration(
-            gradient: AppColors.accentGradient,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accentCyan.withOpacity(0.3),
-                blurRadius: 14,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: FloatingActionButton(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            onPressed: () {
-              Get.dialog(AddTrainingScreen(
-                trainingType: trainingType,
-              ));
-            },
-            child: const Icon(Icons.add_rounded,
-                color: AppColors.white, size: 28),
-          ),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: AppColors.accentPurple,
+          elevation: 4,
+          onPressed: () {
+            Get.dialog(AddTrainingScreen(
+              trainingType: trainingType,
+            ));
+          },
+          child: const Icon(Icons.add_rounded,
+              color: AppColors.white, size: 28),
         ),
         appBar: AppBar(
           flexibleSpace: Container(
@@ -75,16 +62,12 @@ class HomePageContent extends StatelessWidget {
             ),
           ),
           iconTheme: const IconThemeData(color: AppColors.white),
-          title: ShaderMask(
-            shaderCallback: (bounds) =>
-                AppColors.accentGradient.createShader(bounds),
-            child: Text(
-              trainingType,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 22,
-              ),
+          title: Text(
+            trainingType,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 22,
             ),
           ),
           backgroundColor: Colors.transparent,

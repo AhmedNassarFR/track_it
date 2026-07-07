@@ -54,7 +54,7 @@ class HistoryScreen extends StatelessWidget {
           children: [
             ShaderMask(
               shaderCallback: (bounds) =>
-                  AppColors.accentGradient.createShader(bounds),
+                  const LinearGradient(colors: [Color(0xff7B2FFF), Color(0xff7B2FFF)]).createShader(bounds),
               child: Text(
                 training.trainingName,
                 style: const TextStyle(
@@ -261,7 +261,7 @@ class HistoryScreen extends StatelessWidget {
                                 width: 32,
                                 height: 32,
                                 decoration: BoxDecoration(
-                                  gradient: AppColors.accentGradient,
+                                  color: AppColors.accentPurple,
                                   shape: BoxShape.circle,
                                 ),
                                 child: Center(

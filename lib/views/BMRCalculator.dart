@@ -63,7 +63,7 @@ class _BMRCalculatorState extends State<BMRCalculator> {
               const SizedBox(height: 8),
               ShaderMask(
                 shaderCallback: (bounds) =>
-                    AppColors.accentGradient.createShader(bounds),
+                    const LinearGradient(colors: [Color(0xff7B2FFF), Color(0xff7B2FFF)]).createShader(bounds),
                 child: const Text(
                   'BMR Calculator',
                   style: TextStyle(

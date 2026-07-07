@@ -7,7 +7,12 @@ import 'package:track_it/views/HomePage.dart';
 import 'package:track_it/views/RegisterPage.dart';
 import 'package:track_it/views/SignInPage.dart';
 
+import 'models/TrainingModel.dart';
+
+
 SharedPreferences? sharedPreferences;
+List<TrainingModel> trainingList = [];
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,19 +31,12 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Track It',
       theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xff0D0D0D),
-        primaryColor: const Color(0xff00D4FF),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xff00D4FF),
-          secondary: Color(0xff7B2FFF),
-          surface: Color(0xff1A1A2E),
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.teal,
+          brightness: Brightness.dark,
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-        ),
-        fontFamily: 'Roboto',
+        scaffoldBackgroundColor: Colors.transparent,
       ),
       home: const StartupGate(),
     );
@@ -53,7 +51,7 @@ class StartupGate extends StatelessWidget {
     final hasCompletedSignup = sharedPreferences?.getBool('hasCompletedSignup') ?? false;
 
     if (!FirebaseService.isReady) {
-      return hasCompletedSignup ? const HomePage() : RegisterPage();
+      return hasCompletedSignup ? const HomePage() : const RegisterPage();
     }
 
     return StreamBuilder<User?>(
@@ -69,8 +67,10 @@ class StartupGate extends StatelessWidget {
           return const HomePage();
         }
 
-        return hasCompletedSignup ? const SignInPage() : RegisterPage();
+        return hasCompletedSignup ? const SignInPage() : const RegisterPage();
       },
     );
   }
 }
+
+

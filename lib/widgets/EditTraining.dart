@@ -50,7 +50,7 @@ class _EditWeightScreenState extends State<EditWeightScreen> {
                 children: [
                   ShaderMask(
                     shaderCallback: (bounds) =>
-                        AppColors.accentGradient.createShader(bounds),
+                        const LinearGradient(colors: [Color(0xff7B2FFF), Color(0xff7B2FFF)]).createShader(bounds),
                     child: const Text(
                       'Log New Set',
                       style: TextStyle(
@@ -167,7 +167,7 @@ class _EditTrainingDetailsScreenState
                 children: [
                   ShaderMask(
                     shaderCallback: (bounds) =>
-                        AppColors.accentGradient.createShader(bounds),
+                        const LinearGradient(colors: [Color(0xff7B2FFF), Color(0xff7B2FFF)]).createShader(bounds),
                     child: const Text(
                       'Edit Exercise',
                       style: TextStyle(
@@ -335,7 +335,7 @@ Widget _accentButton(String label, VoidCallback onTap) {
     child: Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        gradient: AppColors.accentGradient,
+        color: AppColors.accentPurple,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
