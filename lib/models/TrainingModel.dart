@@ -2,8 +2,9 @@ class TrainingModel {
   String? id;
   String trainingName;
   double weight;
+  int reps;
   DateTime time;
-  String trainingType; // Represented as a String
+  String trainingType;
   List<Map<String, dynamic>> history;
 
   TrainingModel({
@@ -11,32 +12,34 @@ class TrainingModel {
     required this.trainingType,
     required this.trainingName,
     required this.weight,
+    int? reps,
     DateTime? time,
     List<Map<String, dynamic>>? history,
   })  : id = id ?? DateTime.now().microsecondsSinceEpoch.toString(),
+        reps = reps ?? 0,
         time = time ?? DateTime.now(),
         history = history ?? [];
 
-  // Convert the object to a JSON map
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'trainingName': trainingName,
       'weight': weight,
+      'reps': reps,
       'time': time.toIso8601String(),
-      'trainingType': trainingType, // Include trainingType as a string
+      'trainingType': trainingType,
       'history': history,
     };
   }
 
-  // Create the object from a JSON map
   factory TrainingModel.fromJson(Map<String, dynamic> json) {
     return TrainingModel(
       id: json['id']?.toString(),
       trainingName: json['trainingName'],
       weight: json['weight'],
+      reps: json['reps'] ?? 0,
       time: DateTime.parse(json['time']),
-      trainingType: json['trainingType'], // Parse trainingType as a string
+      trainingType: json['trainingType'] ?? 'Others',
       history: List<Map<String, dynamic>>.from(json['history'] ?? const []),
     );
   }

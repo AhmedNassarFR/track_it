@@ -35,37 +35,36 @@ class SettingsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.darkerGrey,
       appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.accentCyan.withOpacity(0.12),
-                AppColors.accentPurple.withOpacity(0.12),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(color: Colors.transparent),
+        flexibleSpace: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.darkGrey.withValues(alpha: 0.55),
+                    AppColors.darkGrey.withValues(alpha: 0.35),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                border: Border(
+                  bottom: BorderSide(color: AppColors.glassBorder),
+                ),
+              ),
             ),
           ),
         ),
         iconTheme: const IconThemeData(color: AppColors.white),
-        title: ShaderMask(
-          shaderCallback: (bounds) =>
-              AppColors.accentGradient.createShader(bounds),
-          child: const Text(
-            'Settings',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 22,
-            ),
+        title: const Text(
+          'Settings',
+          style: TextStyle(
+            color: AppColors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 22,
           ),
         ),
+        toolbarHeight: 72,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),

@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:track_it/AppColors.dart';
 import 'package:track_it/components/GlassContainer.dart';
@@ -31,6 +34,50 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
     selectedValue = widget.trainingType;
   }
 
+  void _triggerFeedback() {
+    try {
+      HapticFeedback.mediumImpact();
+    } catch (_) {}
+  }
+
+  void _showSavedSnackbar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        backgroundColor: Colors.transparent,
+        duration: const Duration(seconds: 2),
+        content: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: Colors.white.withOpacity(0.18)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: Colors.white),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Training created successfully',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final TrainingController trainingController = Get.find();
@@ -42,8 +89,11 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Material(
             color: Colors.transparent,
-            child: GlassContainer(
-              child: Column(
+            child: GestureDetector(
+              onDoubleTap: _triggerFeedback,
+              behavior: HitTestBehavior.opaque,
+              child: GlassContainer(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Title
@@ -168,6 +218,7 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
                               reps: int.parse(reps.text),
                             );
                             trainingController.addTraining(newTraining);
+                            _showSavedSnackbar(context);
                             Get.back();
                           }
                         }),
@@ -180,7 +231,7 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildGlassTextField({

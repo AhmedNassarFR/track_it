@@ -48,40 +48,82 @@ class _BMRCalculatorState extends State<BMRCalculator> {
     }
   }
 
-  double _tdee(double multiplier) => _bmrResult * multiplier;
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.darkerGrey,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+    return Container(
+      color: AppColors.darkerGrey,
+      child: ScrollConfiguration(
+        behavior: _NoScrollbarBehavior(),
         child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 8),
-              ShaderMask(
-                shaderCallback: (bounds) =>
-                    const LinearGradient(colors: [Color(0xff7B2FFF), Color(0xff7B2FFF)]).createShader(bounds),
-                child: const Text(
-                  'BMR Calculator',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'BMR Calculator',
+                          style: TextStyle(
+                            color: AppColors.accentPurple,
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _hasResults && !_showForm
+                              ? 'Your assessment results'
+                              : 'Calculate your daily energy expenditure',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _hasResults && !_showForm
-                    ? 'Your assessment results'
-                    : 'Calculate your daily energy expenditure',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 14,
-                ),
+                  if (_hasResults && !_showForm) ...[
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _showForm = true;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.glassBorder),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.refresh_rounded,
+                              color: AppColors.accentCyan,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Reassess',
+                              style: TextStyle(
+                                color: AppColors.accentCyan,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
               const SizedBox(height: 20),
 
@@ -147,17 +189,13 @@ class _BMRCalculatorState extends State<BMRCalculator> {
                 ),
               ),
               const SizedBox(height: 12),
-              ShaderMask(
-                shaderCallback: (bounds) =>
-                    AppColors.accentGradient.createShader(bounds),
-                child: Text(
-                  _bmrResult.toStringAsFixed(0),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+              Text(
+                _bmrResult.toStringAsFixed(0),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.accentPurple,
                 ),
               ),
               Text(
@@ -177,16 +215,12 @@ class _BMRCalculatorState extends State<BMRCalculator> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ShaderMask(
-                shaderCallback: (bounds) =>
-                    AppColors.warmGradient.createShader(bounds),
-                child: const Text(
-                  'Daily Calories by Activity Level',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                  ),
+              const Text(
+                'Daily Calories by Activity Level',
+                style: TextStyle(
+                  color: AppColors.accentPurple,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               const SizedBox(height: 4),
@@ -233,47 +267,12 @@ class _BMRCalculatorState extends State<BMRCalculator> {
           AppColors.accentPink,
         ),
 
-        const SizedBox(height: 24),
-
-        // Reassess button
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              _showForm = true;
-            });
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.glassBorder),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.refresh_rounded,
-                  color: AppColors.accentCyan,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'Reassess',
-                  style: TextStyle(
-                    color: AppColors.accentCyan,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 100),
       ],
     );
   }
+
+  double _tdee(double multiplier) => _bmrResult * multiplier;
 
   Widget _buildActivityRow(
     String title,
@@ -389,5 +388,12 @@ class _BMRCalculatorState extends State<BMRCalculator> {
       height: 28,
       color: AppColors.glassBorder,
     );
+  }
+}
+
+class _NoScrollbarBehavior extends ScrollBehavior {
+  @override
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
   }
 }

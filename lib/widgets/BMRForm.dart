@@ -19,9 +19,7 @@ class _BMRFormState extends State<BMRForm> {
   final TextEditingController weightController = TextEditingController();
   final TextEditingController heightController = TextEditingController();
   Gender selectedGender = Gender.male;
-  ActivityLevel selectedActivityLevel = ActivityLevel.sedentary;
   double bmrResult = 0.0;
-  double tdeeResult = 0.0;
 
   @override
   void initState() {
@@ -32,14 +30,14 @@ class _BMRFormState extends State<BMRForm> {
   void _prefillFromProfile() {
     try {
       final profileController = Get.find<ProfileController>();
-      if (profileController.userAge.value.isNotEmpty) {
-        ageController.text = profileController.userAge.value;
+      if (profileController.ageController.text.isNotEmpty) {
+        ageController.text = profileController.ageController.text;
       }
-      if (profileController.userWeight.value.isNotEmpty) {
-        weightController.text = profileController.userWeight.value;
+      if (profileController.weightController.text.isNotEmpty) {
+        weightController.text = profileController.weightController.text;
       }
-      if (profileController.userHeight.value.isNotEmpty) {
-        heightController.text = profileController.userHeight.value;
+      if (profileController.heightController.text.isNotEmpty) {
+        heightController.text = profileController.heightController.text;
       }
       if (profileController.userGender.value == 'female') {
         selectedGender = Gender.female;
@@ -69,7 +67,6 @@ class _BMRFormState extends State<BMRForm> {
     }
 
     bmrResult = calculateBMRValue(weight, height, age, selectedGender);
-    tdeeResult = calculateTDEEValue(bmrResult, selectedActivityLevel);
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('bmr_result', bmrResult);
@@ -87,21 +84,6 @@ class _BMRFormState extends State<BMRForm> {
       return 10 * weight + 6.25 * height - 5 * age + 5;
     } else {
       return 10 * weight + 6.25 * height - 5 * age - 161;
-    }
-  }
-
-  double calculateTDEEValue(double bmr, ActivityLevel activityLevel) {
-    switch (activityLevel) {
-      case ActivityLevel.sedentary:
-        return bmr * 1.2;
-      case ActivityLevel.lightlyActive:
-        return bmr * 1.375;
-      case ActivityLevel.moderatelyActive:
-        return bmr * 1.55;
-      case ActivityLevel.veryActive:
-        return bmr * 1.725;
-      case ActivityLevel.superActive:
-        return bmr * 1.9;
     }
   }
 
@@ -197,51 +179,6 @@ class _BMRFormState extends State<BMRForm> {
           style: const TextStyle(color: AppColors.white),
           decoration: _glassInputDecoration('Weight (kg)'),
         ),
-        const SizedBox(height: 16),
-        Text(
-          'Activity Level',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.glassBorder),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: DropdownButtonFormField<ActivityLevel>(
-              dropdownColor: AppColors.darkGrey,
-              isExpanded: true,
-              value: selectedActivityLevel,
-              onChanged: (value) {
-                setState(() {
-                  selectedActivityLevel = value!;
-                });
-              },
-              items: ActivityLevel.values.map((level) {
-                return DropdownMenuItem(
-                  value: level,
-                  child: Text(
-                    _getActivityLevelText(level),
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: AppColors.white),
-                  ),
-                );
-              }).toList(),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-              ),
-              icon: Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
-              borderRadius: BorderRadius.circular(14),
-            ),
-          ),
-        ),
         const SizedBox(height: 20),
         GestureDetector(
           onTap: _calculateAndSave,
@@ -264,9 +201,8 @@ class _BMRFormState extends State<BMRForm> {
           ),
         ),
         const SizedBox(height: 20),
-        if (bmrResult > 0) ...[
+        if (bmrResult > 0)
           GlassContainer(
-            margin: const EdgeInsets.only(bottom: 12),
             child: Column(
               children: [
                 Text(
@@ -278,52 +214,13 @@ class _BMRFormState extends State<BMRForm> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                ShaderMask(
-                  shaderCallback: (bounds) =>
-                      const LinearGradient(colors: [Color(0xff7B2FFF), Color(0xff7B2FFF)]).createShader(bounds),
-                  child: Text(
-                    bmrResult.toStringAsFixed(0),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
                 Text(
-                  'calories/day',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textTertiary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          GlassContainer(
-            child: Column(
-              children: [
-                Text(
-                  'Total Daily Energy Expenditure (TDEE)',
+                  bmrResult.toStringAsFixed(0),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ShaderMask(
-                  shaderCallback: (bounds) =>
-                      const LinearGradient(colors: [Color(0xff7B2FFF), Color(0xff7B2FFF)]).createShader(bounds),
-                  child: Text(
-                    tdeeResult.toStringAsFixed(0),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff7B2FFF),
-                    ),
+                  style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.accentPurple,
                   ),
                 ),
                 Text(
@@ -336,36 +233,12 @@ class _BMRFormState extends State<BMRForm> {
               ],
             ),
           ),
-        ],
       ],
     );
-  }
-
-  String _getActivityLevelText(ActivityLevel level) {
-    switch (level) {
-      case ActivityLevel.sedentary:
-        return 'Sedentary';
-      case ActivityLevel.lightlyActive:
-        return 'Lightly Active';
-      case ActivityLevel.moderatelyActive:
-        return 'Moderately Active';
-      case ActivityLevel.veryActive:
-        return 'Very Active';
-      case ActivityLevel.superActive:
-        return 'Super Active';
-    }
   }
 }
 
 enum Gender {
   male,
   female,
-}
-
-enum ActivityLevel {
-  sedentary,
-  lightlyActive,
-  moderatelyActive,
-  veryActive,
-  superActive,
 }

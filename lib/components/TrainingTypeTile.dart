@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:track_it/AppColors.dart';
 import 'package:track_it/components/GlassContainer.dart';
 
@@ -19,7 +20,10 @@ class TrainingTypeTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      onLongPress: onLongPress,
+      onLongPress: () {
+        HapticFeedback.heavyImpact();
+        onLongPress?.call();
+      },
       child: Padding(
         padding: const EdgeInsets.only(top: 12.0, left: 12, right: 12),
         child: GlassContainer(

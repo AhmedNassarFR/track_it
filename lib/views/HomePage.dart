@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:track_it/AppColors.dart';
@@ -7,7 +8,7 @@ import 'package:track_it/controllers/TrainingController.dart';
 import 'package:track_it/views/ProfilePage.dart';
 import 'package:track_it/views/SettingsPage.dart';
 import 'package:track_it/views/TrainingTypeScreen.dart';
-import 'package:track_it/widgets/AddTraining.dart';
+import 'package:track_it/widgets/CategoryDialog.dart';
 
 import '../main.dart';
 import 'BMRCalculator.dart';
@@ -25,7 +26,6 @@ class _HomePageState extends State<HomePage> {
   final SettingsController settingsController = Get.put(SettingsController());
 
   int myIndex = 0;
-  late String trainingType = "";
 
   void _onItemTapped(int index) {
     setState(() {
@@ -35,103 +35,178 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final userName = profileController.userName.value.isNotEmpty
-        ? profileController.userName.value
-        : (sharedPreferences?.getString("name") ?? "");
+    final bool isOnHome = myIndex == 0;
 
     final List<Widget> widgetList = [
       const TrainingTypeScreen(),
       const BMRCalculator(),
-      const ProfilePage(),
+      ProfilePage(),
     ];
 
     return Scaffold(
+      extendBody: true,
       appBar: AppBar(
+        flexibleSpace: ClipRRect(
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.darkGrey.withValues(alpha: 0.55),
+                    AppColors.darkGrey.withValues(alpha: 0.35),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                border: Border(
+                  bottom: BorderSide(color: AppColors.glassBorder),
+                ),
+              ),
+            ),
+          ),
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Hello, ${userName.isEmpty ? 'Athlete' : userName}",
-              style: const TextStyle(
-                color: AppColors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 20,
+              'Hello,',
+              style: TextStyle(
+                color: AppColors.white.withValues(alpha: 0.6),
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
               ),
             ),
             Obx(() {
-              final name = profileController.userName.value.isNotEmpty
-                  ? profileController.userName.value
+              final name = profileController.displayName.value.isNotEmpty
+                  ? profileController.displayName.value
                   : (sharedPreferences?.getString("name") ?? "Athlete");
               return Text(
                 name,
                 style: const TextStyle(
                   color: AppColors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 20,
                 ),
               );
             }),
-            Text(
-              "Track your lifts with cloud sync",
-              style: TextStyle(
-                color: AppColors.white.withOpacity(0.72),
-                fontSize: 12,
+          ],
+        ),
+        toolbarHeight: 72,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        actions: [
+          if (isOnHome) ...[
+            Obx(() {
+              final isListView = trainingController.crossAxisCount.value == 1;
+              return Tooltip(
+                message: isListView ? 'Grid view' : 'List view',
+                child: IconButton(
+                  onPressed: () {
+                    trainingController.crossAxisCount.value =
+                        isListView ? 2 : 1;
+                  },
+                  icon: Icon(
+                    isListView ? Icons.window_rounded : Icons.menu_rounded,
+                    color: AppColors.white,
+                    size: 22,
+                  ),
+                ),
+              );
+            }),
+            Tooltip(
+              message: 'Add category',
+              child: IconButton(
+                onPressed: () => Get.dialog(const AddCategoryDialog()),
+                icon: const Icon(
+                  Icons.add_circle_outline_rounded,
+                  color: AppColors.white,
+                  size: 22,
+                ),
               ),
             ),
           ],
-        ),
-        toolbarHeight: 76,
-        backgroundColor: AppColors.darkGrey,
-        centerTitle: false,
-        elevation: 0,
-        actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: IconButton(
-              onPressed: () => Get.to(() => const SettingsPage()),
-              icon: const Icon(
-                Icons.settings_outlined,
-                color: AppColors.white,
-                size: 24,
+            padding: const EdgeInsets.only(right: 4),
+            child: Tooltip(
+              message: 'Settings',
+              child: IconButton(
+                onPressed: () => Get.to(() => SettingsPage()),
+                icon: const Icon(
+                  Icons.settings_rounded,
+                  color: AppColors.white,
+                  size: 22,
+                ),
               ),
-              tooltip: 'Settings',
             ),
           ),
         ],
       ),
-      floatingActionButton: myIndex == 0
-          ? FloatingActionButton(
-              backgroundColor: AppColors.darkGrey,
-              tooltip: 'Add training',
-              onPressed: () {
-                Get.dialog(AddTrainingScreen(trainingType: trainingType.isNotEmpty ? trainingType : "Chest"));
-              },
-              child: const Icon(Icons.add, color: AppColors.white),
-            )
-          : null,
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: AppColors.darkGrey,
-        indicatorColor: AppColors.lightPurple.withOpacity(0.22),
-        selectedIndex: myIndex,
-        onDestinationSelected: _onItemTapped,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.fitness_center_outlined, color: AppColors.white),
-            selectedIcon: Icon(Icons.fitness_center, color: AppColors.lightPurple),
-            label: "Trainings",
+      bottomNavigationBar: ClipRRect(
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(color: AppColors.glassBorder),
+              ),
+            ),
+            child: NavigationBarTheme(
+              data: NavigationBarThemeData(
+                labelTextStyle: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return const TextStyle(
+                      color: AppColors.accentPurple,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    );
+                  }
+                  return const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 12,
+                  );
+                }),
+              ),
+              child: NavigationBar(
+                backgroundColor:
+                    AppColors.darkerGrey.withValues(alpha: 0.7),
+                indicatorColor:
+                    AppColors.accentPurple.withValues(alpha: 0.18),
+                indicatorShape: const StadiumBorder(),
+                shadowColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                selectedIndex: myIndex,
+                onDestinationSelected: _onItemTapped,
+                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+                height: 76,
+                destinations: const [
+                  NavigationDestination(
+                    icon: Icon(Icons.fitness_center_outlined,
+                        color: AppColors.white),
+                    selectedIcon: Icon(Icons.fitness_center,
+                        color: AppColors.accentPurple),
+                    label: "Trainings",
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.monitor_heart_outlined,
+                        color: AppColors.white),
+                    selectedIcon: Icon(Icons.monitor_heart,
+                        color: AppColors.accentPurple),
+                    label: "BMR",
+                  ),
+                  NavigationDestination(
+                    icon: Icon(Icons.person_outlined,
+                        color: AppColors.white),
+                    selectedIcon: Icon(Icons.person,
+                        color: AppColors.accentPurple),
+                    label: "Profile",
+                  ),
+                ],
+              ),
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.calculate_outlined, color: AppColors.white),
-            selectedIcon: Icon(Icons.calculate, color: AppColors.lightPurple),
-            label: "BMR",
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.account_circle_outlined, color: AppColors.white),
-            selectedIcon: Icon(Icons.account_circle, color: AppColors.lightPurple),
-            label: "Profile",
-          ),
-        ],
+        ),
       ),
       backgroundColor: AppColors.darkerGrey,
       body: IndexedStack(

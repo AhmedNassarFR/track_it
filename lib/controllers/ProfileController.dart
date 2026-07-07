@@ -5,18 +5,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:track_it/services/cloud_sync_service.dart';
 import 'package:track_it/services/firebase_service.dart';
 
 class ProfileController extends GetxController {
-  var userName = ''.obs;
-  var userAge = ''.obs;
-  var userWeight = ''.obs;
+  final nameController = TextEditingController();
+  final ageController = TextEditingController();
+  final weightController = TextEditingController();
+  final heightController = TextEditingController();
+
   var userGender = 'male'.obs;
-  var userHeight = ''.obs;
   var profileImage = Rxn<ImageProvider>();
+  var displayName = ''.obs;
 
   Uint8List? _selectedImageBytes;
   String? _profileImageUrl;
@@ -26,16 +27,26 @@ class ProfileController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    nameController.addListener(() => displayName.value = nameController.text);
     _loadUserData();
+  }
+
+  @override
+  void onClose() {
+    nameController.dispose();
+    ageController.dispose();
+    weightController.dispose();
+    heightController.dispose();
+    super.onClose();
   }
 
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    userName.value = prefs.getString('name') ?? '';
-    userAge.value = prefs.getString('age') ?? '';
-    userWeight.value = prefs.getString('weight') ?? '';
+    nameController.text = prefs.getString('name') ?? '';
+    ageController.text = prefs.getString('age') ?? '';
+    weightController.text = prefs.getString('weight') ?? '';
     userGender.value = prefs.getString('gender') ?? 'male';
-    userHeight.value = prefs.getString('height') ?? '';
+    heightController.text = prefs.getString('height') ?? '';
 
     String? base64Image = prefs.getString('profile_image');
     if (base64Image != null) {
@@ -47,11 +58,11 @@ class ProfileController extends GetxController {
     if (FirebaseService.isReady && FirebaseAuth.instance.currentUser != null) {
       final profile = await CloudSyncService.loadProfile();
       if (profile != null) {
-        userName.value = profile['name'] ?? userName.value;
-        userAge.value = profile['age'] ?? userAge.value;
-        userWeight.value = profile['weight'] ?? userWeight.value;
-        userGender.value = profile['gender'] ?? userGender.value;
-        userHeight.value = profile['height'] ?? userHeight.value;
+        if (profile['name'] != null) nameController.text = profile['name'];
+        if (profile['age'] != null) ageController.text = profile['age'];
+        if (profile['weight'] != null) weightController.text = profile['weight'];
+        if (profile['gender'] != null) userGender.value = profile['gender'];
+        if (profile['height'] != null) heightController.text = profile['height'];
         _profileImageUrl = profile['photoUrl'];
 
         if (_profileImageUrl != null && _profileImageUrl!.isNotEmpty) {
@@ -85,19 +96,19 @@ class ProfileController extends GetxController {
 
   Future<void> saveUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('name', userName.value);
-    await prefs.setString('age', userAge.value);
-    await prefs.setString('weight', userWeight.value);
+    await prefs.setString('name', nameController.text);
+    await prefs.setString('age', ageController.text);
+    await prefs.setString('weight', weightController.text);
     await prefs.setString('gender', userGender.value);
-    await prefs.setString('height', userHeight.value);
+    await prefs.setString('height', heightController.text);
 
     if (FirebaseService.isReady && FirebaseAuth.instance.currentUser != null) {
       await CloudSyncService.saveProfile(
-        name: userName.value,
-        age: userAge.value,
-        weight: userWeight.value,
+        name: nameController.text,
+        age: ageController.text,
+        weight: weightController.text,
         gender: userGender.value,
-        height: userHeight.value,
+        height: heightController.text,
         imageBytes: _selectedImageBytes,
         existingPhotoUrl: _profileImageUrl,
       );

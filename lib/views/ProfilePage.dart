@@ -6,7 +6,7 @@ import '../AppColors.dart';
 import '../controllers/ProfileController.dart';
 
 class ProfilePage extends StatelessWidget {
-  final ProfileController profileController = Get.put(ProfileController());
+  final ProfileController profileController = Get.find<ProfileController>();
 
   ProfilePage({Key? key}) : super(key: key);
 
@@ -94,27 +94,27 @@ class ProfilePage extends StatelessWidget {
             child: Column(
               children: [
                 _buildTextField(
-                  controller: profileController.userName,
+                  controller: profileController.nameController,
                   hintText: "Your name",
                   icon: Icons.person_outline_rounded,
                 ),
                 const SizedBox(height: 14),
                 _buildTextField(
-                  controller: profileController.userAge,
+                  controller: profileController.ageController,
                   hintText: "Your age",
                   keyboardType: TextInputType.number,
                   icon: Icons.cake_outlined,
                 ),
                 const SizedBox(height: 14),
                 _buildTextField(
-                  controller: profileController.userWeight,
+                  controller: profileController.weightController,
                   hintText: "Your weight (kg)",
                   keyboardType: TextInputType.number,
                   icon: Icons.monitor_weight_outlined,
                 ),
                 const SizedBox(height: 14),
                 _buildTextField(
-                  controller: profileController.userHeight,
+                  controller: profileController.heightController,
                   hintText: "Your height (cm)",
                   keyboardType: TextInputType.number,
                   icon: Icons.height_rounded,
@@ -183,35 +183,29 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildTextField({
-    required RxString controller,
+    required TextEditingController controller,
     required String hintText,
     IconData? icon,
     TextInputType keyboardType = TextInputType.text,
   }) {
-    return Obx(
-      () => TextField(
-        controller: TextEditingController(text: controller.value)
-          ..selection = TextSelection.fromPosition(
-            TextPosition(offset: controller.value.length),
-          ),
-        onChanged: (val) => controller.value = val,
-        style: const TextStyle(color: AppColors.white),
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          prefixIcon: icon != null ? Icon(icon, color: AppColors.textTertiary, size: 20) : null,
-          suffixIcon: const Icon(Icons.edit, color: AppColors.white, size: 20),
-          fillColor: Colors.white.withOpacity(0.06),
-          filled: true,
-          hintText: hintText,
-          hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 15),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(14)),
-            borderSide: BorderSide(color: AppColors.glassBorder),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(14)),
-            borderSide: BorderSide(color: AppColors.accentCyan.withOpacity(0.5)),
-          ),
+    return TextField(
+      controller: controller,
+      style: const TextStyle(color: AppColors.white),
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        prefixIcon: icon != null ? Icon(icon, color: AppColors.textTertiary, size: 20) : null,
+        suffixIcon: const Icon(Icons.edit, color: AppColors.white, size: 20),
+        fillColor: Colors.white.withOpacity(0.06),
+        filled: true,
+        hintText: hintText,
+        hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(14)),
+          borderSide: BorderSide(color: AppColors.glassBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(14)),
+          borderSide: BorderSide(color: AppColors.accentCyan.withOpacity(0.5)),
         ),
       ),
     );
