@@ -34,13 +34,22 @@ class TrainingModel {
 
   factory TrainingModel.fromJson(Map<String, dynamic> json) {
     return TrainingModel(
-      id: json['id']?.toString(),
-      trainingName: json['trainingName'],
-      weight: json['weight'],
-      reps: json['reps'] ?? 0,
-      time: DateTime.parse(json['time']),
-      trainingType: json['trainingType'] ?? 'Others',
-      history: List<Map<String, dynamic>>.from(json['history'] ?? const []),
+      id: json['id']?.toString() ?? json['_id']?.toString(),
+      trainingName: (json['trainingName'] ?? json['name'] ?? json['exerciseName'] ?? '') as String,
+      weight: ((json['weight'] as num?)?.toDouble() ?? 0.0),
+      reps: ((json['reps'] as num?)?.toInt() ?? 0),
+      time: (json['time'] != null
+          ? DateTime.tryParse(json['time'])
+          : json['date'] != null
+              ? DateTime.tryParse(json['date'])
+              : null) ??
+          DateTime.now(),
+      trainingType: (json['trainingType'] ?? json['type'] ?? json['category'] ?? 'Others') as String,
+      history: (json['history'] is List
+          ? List<Map<String, dynamic>>.from(
+              (json['history'] as List).map((e) => e is Map<String, dynamic> ? e : <String, dynamic>{}),
+            )
+          : const <Map<String, dynamic>>[]),
     );
   }
 }

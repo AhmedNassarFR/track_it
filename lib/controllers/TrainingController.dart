@@ -33,6 +33,25 @@ class TrainingController extends GetxController {
     Icons.snowboarding_rounded,
   ];
 
+  static final Map<int, IconData> _iconDataMap = {
+    Icons.fitness_center_rounded.codePoint: Icons.fitness_center_rounded,
+    Icons.self_improvement_rounded.codePoint: Icons.self_improvement_rounded,
+    Icons.sports_handball_rounded.codePoint: Icons.sports_handball_rounded,
+    Icons.directions_run_rounded.codePoint: Icons.directions_run_rounded,
+    Icons.accessibility_new_rounded.codePoint: Icons.accessibility_new_rounded,
+    Icons.directions_bike_rounded.codePoint: Icons.directions_bike_rounded,
+    Icons.pool_rounded.codePoint: Icons.pool_rounded,
+    Icons.skateboarding_rounded.codePoint: Icons.skateboarding_rounded,
+    Icons.sports_gymnastics_rounded.codePoint: Icons.sports_gymnastics_rounded,
+    Icons.sports_tennis_rounded.codePoint: Icons.sports_tennis_rounded,
+    Icons.sports_kabaddi_rounded.codePoint: Icons.sports_kabaddi_rounded,
+    Icons.sailing_rounded.codePoint: Icons.sailing_rounded,
+    Icons.hiking_rounded.codePoint: Icons.hiking_rounded,
+    Icons.sports_martial_arts_rounded.codePoint: Icons.sports_martial_arts_rounded,
+    Icons.downhill_skiing_rounded.codePoint: Icons.downhill_skiing_rounded,
+    Icons.snowboarding_rounded.codePoint: Icons.snowboarding_rounded,
+  };
+
   @override
   void onInit() {
     super.onInit();
@@ -47,12 +66,16 @@ class TrainingController extends GetxController {
     }
 
     if (FirebaseService.isReady && FirebaseAuth.instance.currentUser != null) {
-      final cloudList = await CloudSyncService.loadTrainings();
-      if (cloudList.isNotEmpty) {
-        trainingList.assignAll(cloudList);
-        await saveTrainingList();
-      } else if (trainingList.isNotEmpty) {
-        await CloudSyncService.saveTrainings(trainingList);
+      try {
+        final cloudList = await CloudSyncService.loadTrainings();
+        if (cloudList.isNotEmpty) {
+          trainingList.assignAll(cloudList);
+          await saveTrainingList();
+        } else if (trainingList.isNotEmpty) {
+          await CloudSyncService.saveTrainings(trainingList);
+        }
+      } catch (e) {
+        // Cloud fetch failed — keep local data as-is
       }
     }
   }
@@ -101,28 +124,28 @@ class TrainingController extends GetxController {
   }
 
   static int defaultIconCodePoint(String category) {
-    switch (category.toLowerCase()) {
-      case 'chest':
-        return Icons.fitness_center_rounded.codePoint;
-      case 'back':
-        return Icons.self_improvement_rounded.codePoint;
-      case 'arm':
-        return Icons.sports_handball_rounded.codePoint;
-      case 'leg':
-        return Icons.directions_run_rounded.codePoint;
-      default:
-        return Icons.fitness_center_rounded.codePoint;
-    }
+    return defaultIconForCategory(category).codePoint;
   }
 
   static IconData defaultIconForCategory(String category) {
-    return IconData(defaultIconCodePoint(category), fontFamily: 'MaterialIcons');
+    switch (category.toLowerCase()) {
+      case 'chest':
+        return Icons.fitness_center_rounded;
+      case 'back':
+        return Icons.self_improvement_rounded;
+      case 'arm':
+        return Icons.sports_handball_rounded;
+      case 'leg':
+        return Icons.directions_run_rounded;
+      default:
+        return Icons.fitness_center_rounded;
+    }
   }
 
   IconData getCategoryIconData(String category) {
     final codePoint = categoryIcons[category];
     if (codePoint != null) {
-      return IconData(codePoint, fontFamily: 'MaterialIcons');
+      return _iconDataMap[codePoint] ?? Icons.fitness_center_rounded;
     }
     return defaultIconForCategory(category);
   }

@@ -159,9 +159,9 @@ class CloudSyncService {
 
     final reference = _storage.ref().child('users/${_auth.currentUser!.uid}/profile.jpg');
     if (image is File) {
-      await reference.putFile(image as File);
+      await reference.putFile(image);
     } else if (image is Uint8List) {
-      await reference.putData(image as Uint8List);
+      await reference.putData(image);
     } else {
       throw ArgumentError('Unsupported image type');
     }
@@ -174,19 +174,27 @@ class CloudSyncService {
       return [];
     }
 
-    final snapshot = await _firestore
-        .collection('users')
-        .doc(_auth.currentUser!.uid)
-        .collection('trainings')
-        .orderBy('time', descending: false)
-        .get();
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(_auth.currentUser!.uid)
+          .collection('trainings')
+          .orderBy('time', descending: false)
+          .get();
 
-    return snapshot.docs
-        .map((doc) => TrainingModel.fromJson({
-              ...doc.data(),
-              'id': doc.id,
-            }))
-        .toList();
+      return snapshot.docs.map((doc) {
+        try {
+          return TrainingModel.fromJson({
+            ...doc.data(),
+            'id': doc.id,
+          });
+        } catch (_) {
+          return null;
+        }
+      }).whereType<TrainingModel>().toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   static Future<void> saveTrainings(List<TrainingModel> trainings) async {
