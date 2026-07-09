@@ -15,8 +15,7 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.darkerGrey,
       body: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.symmetric(horizontal: 30.0),
+        padding: const EdgeInsets.fromLTRB(30, 0, 30, 120),
         children: [
           const SizedBox(height: 50),
           Center(
@@ -139,6 +138,7 @@ class ProfilePage extends StatelessWidget {
             },
             child: const Text("Save", style: TextStyle(color: AppColors.white)),
           ),
+          const SizedBox(height: 40),
         ],
       ),
     );

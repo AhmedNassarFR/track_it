@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:track_it/AppColors.dart';
 import 'package:track_it/components/GlassContainer.dart';
@@ -112,18 +113,28 @@ class HomePageContent extends StatelessWidget {
                   ),
                 ),
               )
-            : ListView.builder(
+            : ReorderableListView.builder(
                 padding: const EdgeInsets.only(top: 4, bottom: 100, left: 8, right: 8),
                 itemCount: filteredList.length,
+                onReorder: (oldIndex, newIndex) {
+                  HapticFeedback.vibrate();
+                  controller.reorderTrainings(trainingType, oldIndex, newIndex);
+                },
+                proxyDecorator: (child, index, animation) => Material(
+                  color: Colors.transparent,
+                  child: Opacity(opacity: 0.85, child: child),
+                ),
                 itemBuilder: (context, index) {
                   final training = filteredList[index];
                   return TrainingTile(
+                    key: ValueKey(training.id ?? training.trainingName + index.toString()),
                     onTap: () {
                       Get.to(() => HistoryScreen(training: training));
                     },
                     trainingName: training.trainingName,
                     weight: training.weight,
                     reps: training.reps,
+                    showDragHandle: true,
                     onLongPress: () {
                       Get.dialog(EditOrDeleteTraining(
                           index: controller.trainingList

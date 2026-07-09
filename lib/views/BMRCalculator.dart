@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../AppColors.dart';
 import '../components/GlassContainer.dart';
+import '../controllers/ProfileController.dart';
 import '../widgets/BMRForm.dart';
 
 class BMRCalculator extends StatefulWidget {
@@ -50,12 +52,44 @@ class _BMRCalculatorState extends State<BMRCalculator> {
 
   @override
   Widget build(BuildContext context) {
+    // Attempt to load profile data from ProfileController dynamically
+    final ProfileController profileController = Get.find<ProfileController>();
+
+    final pAge = profileController.ageController.text.trim();
+    final pWeight = profileController.weightController.text.trim();
+    final pHeight = profileController.heightController.text.trim();
+    final pGender = profileController.userGender.value;
+
+    final age = int.tryParse(pAge) ?? 0;
+    final weight = double.tryParse(pWeight) ?? 0.0;
+    final height = double.tryParse(pHeight) ?? 0.0;
+
+    final bool hasProfileData = age > 0 && weight > 0 && height > 0;
+
+    final double displayBmr;
+    if (hasProfileData) {
+      if (pGender == 'male') {
+        displayBmr = 10 * weight + 6.25 * height - 5 * age + 5;
+      } else {
+        displayBmr = 10 * weight + 6.25 * height - 5 * age - 161;
+      }
+    } else {
+      displayBmr = _bmrResult;
+    }
+
+    final displayGender = hasProfileData ? pGender : _gender;
+    final displayAge = hasProfileData ? age.toString() : _age;
+    final displayHeight = hasProfileData ? height.toString() : _height;
+    final displayWeight = hasProfileData ? weight.toString() : _weight;
+
+    final showResultsView = hasProfileData || (_hasResults && !_showForm);
+
     return Container(
       color: AppColors.darkerGrey,
       child: ScrollConfiguration(
         behavior: _NoScrollbarBehavior(),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -76,7 +110,7 @@ class _BMRCalculatorState extends State<BMRCalculator> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _hasResults && !_showForm
+                          showResultsView
                               ? 'Your assessment results'
                               : 'Calculate your daily energy expenditure',
                           style: TextStyle(
@@ -87,7 +121,7 @@ class _BMRCalculatorState extends State<BMRCalculator> {
                       ],
                     ),
                   ),
-                  if (_hasResults && !_showForm) ...[
+                  if (showResultsView) ...[
                     GestureDetector(
                       onTap: () {
                         setState(() {
@@ -128,11 +162,14 @@ class _BMRCalculatorState extends State<BMRCalculator> {
               const SizedBox(height: 20),
 
               // Show results or form
-              if (_hasResults && !_showForm) ...[
-                _buildResultsView(),
+              if (showResultsView && !_showForm) ...[
+                _buildResultsView(displayBmr, displayGender, displayAge, displayHeight, displayWeight),
               ] else ...[
                 BMRForm(
                   onAssessmentComplete: () {
+                    setState(() {
+                      _showForm = false;
+                    });
                     _loadSavedResults();
                   },
                 ),
@@ -144,7 +181,13 @@ class _BMRCalculatorState extends State<BMRCalculator> {
     );
   }
 
-  Widget _buildResultsView() {
+  Widget _buildResultsView(
+    double bmr,
+    String gender,
+    String age,
+    String height,
+    String weight,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -155,13 +198,13 @@ class _BMRCalculatorState extends State<BMRCalculator> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _infoChip(Icons.person_outline, _gender == 'male' ? 'Male' : 'Female'),
+              _infoChip(Icons.person_outline, gender == 'male' ? 'Male' : 'Female'),
               _infoDivider(),
-              _infoChip(Icons.cake_outlined, '$_age yrs'),
+              _infoChip(Icons.cake_outlined, '$age yrs'),
               _infoDivider(),
-              _infoChip(Icons.height_rounded, '${_height} cm'),
+              _infoChip(Icons.height_rounded, '$height cm'),
               _infoDivider(),
-              _infoChip(Icons.monitor_weight_outlined, '${_weight} kg'),
+              _infoChip(Icons.monitor_weight_outlined, '$weight kg'),
             ],
           ),
         ),
@@ -190,7 +233,7 @@ class _BMRCalculatorState extends State<BMRCalculator> {
               ),
               const SizedBox(height: 12),
               Text(
-                _bmrResult.toStringAsFixed(0),
+                bmr.toStringAsFixed(0),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 48,
@@ -241,30 +284,35 @@ class _BMRCalculatorState extends State<BMRCalculator> {
           'Little or no exercise',
           1.2,
           AppColors.accentCyan,
+          bmr,
         ),
         _buildActivityRow(
           'Lightly Active',
           'Light exercise 1-3 days/week',
           1.375,
-          Color(0xff00E5A0),
+          const Color(0xff00E5A0),
+          bmr,
         ),
         _buildActivityRow(
           'Moderately Active',
           'Moderate exercise 3-5 days/week',
           1.55,
           AppColors.accentPurple,
+          bmr,
         ),
         _buildActivityRow(
           'Very Active',
           'Hard exercise 6-7 days/week',
           1.725,
-          Color(0xffFF8C00),
+          const Color(0xffFF8C00),
+          bmr,
         ),
         _buildActivityRow(
           'Super Active',
           'Very hard exercise, physical job',
           1.9,
           AppColors.accentPink,
+          bmr,
         ),
 
         const SizedBox(height: 100),
@@ -272,15 +320,14 @@ class _BMRCalculatorState extends State<BMRCalculator> {
     );
   }
 
-  double _tdee(double multiplier) => _bmrResult * multiplier;
-
   Widget _buildActivityRow(
     String title,
     String subtitle,
     double multiplier,
     Color accentColor,
+    double bmr,
   ) {
-    final tdee = _tdee(multiplier);
+    final tdee = bmr * multiplier;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: GlassContainer(

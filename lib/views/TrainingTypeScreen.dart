@@ -25,29 +25,38 @@ class _TrainingTypeScreenState extends State<TrainingTypeScreen> {
 
     return Obx(() {
       if (controller.categories.isEmpty) {
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(40),
-            child: GlassContainer(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.category_rounded,
-                      color: AppColors.textTertiary, size: 48),
-                  const SizedBox(height: 12),
-                  Text(
-                    'No categories yet',
-                    style: TextStyle(
-                        color: AppColors.textSecondary, fontSize: 16),
+        return RefreshIndicator(
+          onRefresh: () => controller.forceSync(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height - 200,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(40),
+                  child: GlassContainer(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.category_rounded,
+                            color: AppColors.textTertiary, size: 48),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No categories yet',
+                          style: TextStyle(
+                              color: AppColors.textSecondary, fontSize: 16),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tap + in the top bar to add your first category',
+                          style: TextStyle(
+                              color: AppColors.textTertiary, fontSize: 13),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Tap + in the top bar to add your first category',
-                    style: TextStyle(
-                        color: AppColors.textTertiary, fontSize: 13),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -66,34 +75,38 @@ class _TrainingTypeScreenState extends State<TrainingTypeScreen> {
   }
 
   Widget _buildReorderableList(TrainingController controller) {
-    return ReorderableListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-      itemCount: controller.categories.length,
-      onReorder: (oldIndex, newIndex) =>
-          controller.reorderCategories(oldIndex, newIndex),
-      proxyDecorator: (child, index, animation) => Material(
-        color: Colors.transparent,
-        child: Opacity(opacity: 0.85, child: child),
+    return RefreshIndicator(
+      onRefresh: () => controller.forceSync(),
+      child: ReorderableListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+        itemCount: controller.categories.length,
+        onReorder: (oldIndex, newIndex) =>
+            controller.reorderCategories(oldIndex, newIndex),
+        proxyDecorator: (child, index, animation) => Material(
+          color: Colors.transparent,
+          child: Opacity(opacity: 0.85, child: child),
+        ),
+        itemBuilder: (context, index) {
+          final category = controller.categories[index];
+          return Obx(
+            key: ValueKey(category),
+            () {
+            final count = controller.getExerciseCountForCategory(category);
+            final iconAssetPath = controller.getCategoryIconAssetPath(category);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _CategoryGridTile(
+              name: category,
+              count: count,
+              isListView: true,
+              iconAssetPath: iconAssetPath,
+              showDragHandle: true,
+              onTap: () =>
+                  Get.to(() => HomePageContent(trainingType: category)),
+            ));
+          });
+        },
       ),
-      itemBuilder: (context, index) {
-        final category = controller.categories[index];
-        return Obx(
-          key: ValueKey(category),
-          () {
-          final count = controller.getExerciseCountForCategory(category);
-          final icon = controller.getCategoryIconData(category);
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _CategoryGridTile(
-            name: category,
-            count: count,
-            isListView: true,
-            icon: icon,
-            onTap: () =>
-                Get.to(() => HomePageContent(trainingType: category)),
-          ));
-        });
-      },
     );
   }
 
@@ -142,32 +155,35 @@ class _TrainingTypeScreenState extends State<TrainingTypeScreen> {
   }
 
   Widget _buildNormalGrid(TrainingController controller) {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.15,
+    return RefreshIndicator(
+      onRefresh: () => controller.forceSync(),
+      child: GridView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.15,
+        ),
+        itemCount: controller.categories.length,
+        itemBuilder: (context, index) {
+          final category = controller.categories[index];
+          return Obx(() {
+            final count = controller.getExerciseCountForCategory(category);
+            final iconAssetPath = controller.getCategoryIconAssetPath(category);
+            return _CategoryGridTile(
+              name: category,
+              count: count,
+              isListView: false,
+              iconAssetPath: iconAssetPath,
+              onTap: () =>
+                  Get.to(() => HomePageContent(trainingType: category)),
+              onLongPress: () => Get.dialog(
+                  CategoryOptionsDialog(categoryName: category)),
+            );
+          });
+        },
       ),
-      itemCount: controller.categories.length,
-      itemBuilder: (context, index) {
-        final category = controller.categories[index];
-        return Obx(() {
-          final count = controller.getExerciseCountForCategory(category);
-          final icon = controller.getCategoryIconData(category);
-          return _CategoryGridTile(
-            name: category,
-            count: count,
-            isListView: false,
-            icon: icon,
-            onTap: () =>
-                Get.to(() => HomePageContent(trainingType: category)),
-            onLongPress: () => Get.dialog(
-                CategoryOptionsDialog(categoryName: category)),
-          );
-        });
-      },
     );
   }
 
@@ -187,7 +203,7 @@ class _TrainingTypeScreenState extends State<TrainingTypeScreen> {
           key: ValueKey(category),
           () {
           final count = controller.getExerciseCountForCategory(category);
-          final icon = controller.getCategoryIconData(category);
+          final iconAssetPath = controller.getCategoryIconAssetPath(category);
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: SizedBox(
@@ -196,7 +212,7 @@ class _TrainingTypeScreenState extends State<TrainingTypeScreen> {
                   name: category,
                   count: count,
                   isListView: false,
-                  icon: icon,
+                  iconAssetPath: iconAssetPath,
                 onTap: () {},
               ),
             ),
@@ -211,18 +227,38 @@ class _CategoryGridTile extends StatelessWidget {
   final String name;
   final int count;
   final bool isListView;
-  final IconData icon;
+  final String iconAssetPath;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
+  final bool showDragHandle;
 
   const _CategoryGridTile({
     required this.name,
     required this.count,
     required this.isListView,
-    required this.icon,
+    required this.iconAssetPath,
     required this.onTap,
     this.onLongPress,
+    this.showDragHandle = false,
   });
+
+  Widget _buildIcon({double size = 22}) {
+    if (iconAssetPath == 'FLUTTER_ICON:dumbbell') {
+      return Icon(
+        Icons.fitness_center_rounded,
+        size: size,
+        color: Colors.white,
+      );
+    }
+    return Image.asset(
+      iconAssetPath,
+      width: size,
+      height: size,
+      color: Colors.white,
+      colorBlendMode: BlendMode.srcIn,
+      fit: BoxFit.contain,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -243,6 +279,16 @@ class _CategoryGridTile extends StatelessWidget {
             child: isListView
                 ? Row(
                     children: [
+                      // Drag handle on the left
+                      if (showDragHandle) ...[
+                        Icon(
+                          Icons.drag_indicator_rounded,
+                          color: AppColors.textTertiary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                      // Icon container
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
@@ -250,10 +296,10 @@ class _CategoryGridTile extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: AppColors.accentBorder),
                         ),
-                        child: Icon(icon,
-                            color: AppColors.accentPurple, size: 22),
+                        child: _buildIcon(),
                       ),
                       const SizedBox(width: 16),
+                      // Name and count
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,6 +325,12 @@ class _CategoryGridTile extends StatelessWidget {
                           ],
                         ),
                       ),
+                      // Chevron arrow on the right
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppColors.textTertiary,
+                        size: 22,
+                      ),
                     ],
                   )
                 : Column(
@@ -293,8 +345,7 @@ class _CategoryGridTile extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: AppColors.accentBorder),
                             ),
-                            child: Icon(icon,
-                                color: AppColors.accentPurple, size: 22),
+                            child: _buildIcon(),
                           ),
                           const Spacer(),
                         ],

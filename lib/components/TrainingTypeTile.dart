@@ -21,7 +21,7 @@ class TrainingTypeTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       onLongPress: () {
-        HapticFeedback.heavyImpact();
+        HapticFeedback.vibrate();
         onLongPress?.call();
       },
       child: Padding(

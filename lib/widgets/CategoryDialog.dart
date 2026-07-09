@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:track_it/AppColors.dart';
 import 'package:track_it/components/GlassContainer.dart';
 import 'package:track_it/controllers/TrainingController.dart';
+import 'package:track_it/models/CategoryIcon.dart';
 
 class AddCategoryDialog extends StatefulWidget {
   const AddCategoryDialog({super.key});
@@ -14,7 +15,7 @@ class AddCategoryDialog extends StatefulWidget {
 class _AddCategoryDialogState extends State<AddCategoryDialog> {
   final TextEditingController nameController = TextEditingController();
   String? errorText;
-  int? selectedIconCodePoint;
+  String? selectedIconId;
 
   @override
   void dispose() {
@@ -24,8 +25,6 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final TrainingController controller = Get.find();
-
     return Center(
       child: SingleChildScrollView(
         child: Padding(
@@ -47,8 +46,8 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                   const SizedBox(height: 20),
                   _buildTextField(nameController, 'Category name', errorText),
                   const SizedBox(height: 16),
-                  _buildIconPicker(controller, selectedIconCodePoint, (cp) {
-                    setState(() => selectedIconCodePoint = cp);
+                  _buildPngIconPicker(selectedIconId, (id) {
+                    setState(() => selectedIconId = id);
                   }),
                   const SizedBox(height: 20),
                   Row(
@@ -64,12 +63,13 @@ class _AddCategoryDialogState extends State<AddCategoryDialog> {
                             setState(() => errorText = 'Name cannot be empty');
                             return;
                           }
+                          final TrainingController controller = Get.find();
                           if (controller.categories.contains(name)) {
                             setState(() => errorText = 'Category already exists');
                             return;
                           }
                           controller.addCategory(name,
-                              iconCodePoint: selectedIconCodePoint);
+                              iconId: selectedIconId);
                           Get.back();
                         }),
                       ),
@@ -96,15 +96,14 @@ class EditCategoryDialog extends StatefulWidget {
 class _EditCategoryDialogState extends State<EditCategoryDialog> {
   late final TextEditingController nameController;
   String? errorText;
-  int? selectedIconCodePoint;
+  String? selectedIconId;
 
   @override
   void initState() {
     super.initState();
     nameController = TextEditingController(text: widget.categoryName);
     final controller = Get.find<TrainingController>();
-    selectedIconCodePoint =
-        controller.categoryIcons[widget.categoryName];
+    selectedIconId = controller.getCategoryIconId(widget.categoryName);
   }
 
   @override
@@ -138,8 +137,8 @@ class _EditCategoryDialogState extends State<EditCategoryDialog> {
                   const SizedBox(height: 20),
                   _buildTextField(nameController, 'Category name', errorText),
                   const SizedBox(height: 16),
-                  _buildIconPicker(controller, selectedIconCodePoint, (cp) {
-                    setState(() => selectedIconCodePoint = cp);
+                  _buildPngIconPicker(selectedIconId, (id) {
+                    setState(() => selectedIconId = id);
                   }),
                   const SizedBox(height: 20),
                   Row(
@@ -164,12 +163,12 @@ class _EditCategoryDialogState extends State<EditCategoryDialog> {
                             controller.editCategory(
                                 widget.categoryName, newName);
                           }
-                          if (selectedIconCodePoint != null) {
+                          if (selectedIconId != null) {
                             final name = newName != widget.categoryName
                                 ? newName
                                 : widget.categoryName;
                             controller.setCategoryIcon(
-                                name, selectedIconCodePoint!);
+                                name, selectedIconId!);
                           }
                           Get.back();
                         }),
@@ -207,11 +206,24 @@ class CategoryOptionsDialog extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      controller.getCategoryIconData(categoryName),
-                      color: AppColors.accentCyan,
-                      size: 22,
-                    ),
+                    (() {
+                      final path = controller.getCategoryIconAssetPath(categoryName);
+                      if (path == 'FLUTTER_ICON:dumbbell') {
+                        return const Icon(
+                          Icons.fitness_center_rounded,
+                          size: 22,
+                          color: Colors.white,
+                        );
+                      }
+                      return Image.asset(
+                        path,
+                        width: 22,
+                        height: 22,
+                        color: Colors.white,
+                        colorBlendMode: BlendMode.srcIn,
+                        fit: BoxFit.contain,
+                      );
+                    })(),
                     const SizedBox(width: 10),
                     Text(
                       categoryName,
@@ -319,88 +331,6 @@ class CategoryOptionsDialog extends StatelessWidget {
   }
 }
 
-class IconPickerDialog extends StatelessWidget {
-  final String categoryName;
-  const IconPickerDialog({super.key, required this.categoryName});
-
-  @override
-  Widget build(BuildContext context) {
-    final TrainingController controller = Get.find();
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: Material(
-          color: Colors.transparent,
-          child: GlassContainer(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Choose an icon',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _buildIconGrid(controller, categoryName),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: _glassButton('Cancel', () => Get.back()),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildIconGrid(TrainingController controller, String category) {
-    return GridView(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-      ),
-      children: TrainingController.categoryIconOptions.map((icon) {
-        final codePoint = icon.codePoint;
-        final isSelected =
-            controller.categoryIcons[category] == codePoint;
-        return GestureDetector(
-          onTap: () {
-            controller.setCategoryIcon(category, codePoint);
-            Get.back();
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.accentPurple.withOpacity(0.2)
-                  : Colors.white.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isSelected
-                    ? AppColors.accentPurple.withOpacity(0.5)
-                    : AppColors.glassBorder,
-              ),
-            ),
-            child: Icon(
-              icon,
-              color: isSelected ? AppColors.accentCyan : AppColors.textSecondary,
-              size: 28,
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-}
-
 class _DeleteConfirmDialog extends StatelessWidget {
   final String title;
   final String message;
@@ -497,6 +427,8 @@ class _DeleteConfirmDialog extends StatelessWidget {
   }
 }
 
+// ─── Shared Helpers ───────────────────────────────────────────
+
 Widget _buildTextField(
     TextEditingController controller, String hint, String? error) {
   return TextField(
@@ -529,8 +461,8 @@ Widget _buildTextField(
   );
 }
 
-Widget _buildIconPicker(TrainingController controller, int? selectedCodePoint,
-    ValueChanged<int> onSelected) {
+/// SVG icon picker grid — shows all available gym icons
+Widget _buildPngIconPicker(String? selectedIconId, ValueChanged<String> onSelected) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -543,7 +475,7 @@ Widget _buildIconPicker(TrainingController controller, int? selectedCodePoint,
         ),
       ),
       const SizedBox(height: 8),
-      GridView(
+      GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -552,33 +484,63 @@ Widget _buildIconPicker(TrainingController controller, int? selectedCodePoint,
           mainAxisSpacing: 8,
           childAspectRatio: 1,
         ),
-        children: TrainingController.categoryIconOptions.map((icon) {
-          final codePoint = icon.codePoint;
-          final isSelected = selectedCodePoint == codePoint;
+        itemCount: CategoryIconOption.allIcons.length,
+        itemBuilder: (context, index) {
+          final iconOption = CategoryIconOption.allIcons[index];
+          final isSelected = selectedIconId == iconOption.id;
           return GestureDetector(
-            onTap: () => onSelected(codePoint),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.accentPurple.withOpacity(0.25)
-                    : Colors.white.withOpacity(0.06),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isSelected
-                      ? AppColors.accentPurple.withOpacity(0.5)
-                      : AppColors.glassBorder,
+            onTap: () => onSelected(iconOption.id),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.accentPurple.withOpacity(0.25)
+                          : Colors.white.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.accentPurple.withOpacity(0.5)
+                            : AppColors.glassBorder,
+                      ),
+                    ),
+                    child: Center(
+                      child: Opacity(
+                        opacity: isSelected ? 1.0 : 0.5,
+                        child: iconOption.assetPath == 'FLUTTER_ICON:dumbbell'
+                            ? const Icon(
+                                Icons.fitness_center_rounded,
+                                size: 24,
+                                color: Colors.white,
+                              )
+                            : Image.asset(
+                                iconOption.assetPath,
+                                width: 24,
+                                height: 24,
+                                color: Colors.white,
+                                colorBlendMode: BlendMode.srcIn,
+                                fit: BoxFit.contain,
+                              ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              child: Icon(
-                icon,
-                color: isSelected
-                    ? AppColors.accentCyan
-                    : AppColors.textSecondary,
-                size: 24,
-              ),
+                const SizedBox(height: 2),
+                Text(
+                  iconOption.label,
+                  style: TextStyle(
+                    color: isSelected ? AppColors.accentCyan : AppColors.textTertiary,
+                    fontSize: 9,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           );
-        }).toList(),
+        },
       ),
     ],
   );

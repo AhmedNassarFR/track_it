@@ -148,62 +148,43 @@ class _HomePageState extends State<HomePage> {
           filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
           child: Container(
             decoration: BoxDecoration(
+              color: AppColors.darkerGrey.withOpacity(0.7),
               border: Border(
                 top: BorderSide(color: AppColors.glassBorder),
               ),
             ),
-            child: NavigationBarTheme(
-              data: NavigationBarThemeData(
-                labelTextStyle: WidgetStateProperty.resolveWith((states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return const TextStyle(
-                      color: AppColors.accentPurple,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    );
-                  }
-                  return const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 12,
-                  );
-                }),
+            child: BottomNavigationBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              currentIndex: myIndex,
+              onTap: _onItemTapped,
+              selectedItemColor: AppColors.accentPurple,
+              unselectedItemColor: AppColors.white.withOpacity(0.6),
+              selectedLabelStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
               ),
-              child: NavigationBar(
-                backgroundColor:
-                    AppColors.darkerGrey.withValues(alpha: 0.7),
-                indicatorColor:
-                    AppColors.accentPurple.withValues(alpha: 0.18),
-                indicatorShape: const StadiumBorder(),
-                shadowColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
-                selectedIndex: myIndex,
-                onDestinationSelected: _onItemTapped,
-                labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-                height: 76,
-                destinations: const [
-                  NavigationDestination(
-                    icon: Icon(Icons.fitness_center_outlined,
-                        color: AppColors.white),
-                    selectedIcon: Icon(Icons.fitness_center,
-                        color: AppColors.accentPurple),
-                    label: "Trainings",
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.monitor_heart_outlined,
-                        color: AppColors.white),
-                    selectedIcon: Icon(Icons.monitor_heart,
-                        color: AppColors.accentPurple),
-                    label: "BMR",
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.person_outlined,
-                        color: AppColors.white),
-                    selectedIcon: Icon(Icons.person,
-                        color: AppColors.accentPurple),
-                    label: "Profile",
-                  ),
-                ],
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 12,
               ),
+              type: BottomNavigationBarType.fixed,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.fitness_center_outlined, size: 22),
+                  activeIcon: Icon(Icons.fitness_center, size: 22),
+                  label: "Trainings",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.monitor_heart_outlined, size: 22),
+                  activeIcon: Icon(Icons.monitor_heart, size: 22),
+                  label: "BMR",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outlined, size: 22),
+                  activeIcon: Icon(Icons.person, size: 22),
+                  label: "Profile",
+                ),
+              ],
             ),
           ),
         ),

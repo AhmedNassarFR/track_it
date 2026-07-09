@@ -36,7 +36,7 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
 
   void _triggerFeedback() {
     try {
-      HapticFeedback.mediumImpact();
+      HapticFeedback.vibrate();
     } catch (_) {}
   }
 

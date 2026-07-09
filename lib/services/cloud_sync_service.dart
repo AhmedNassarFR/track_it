@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:track_it/models/TrainingModel.dart';
 
@@ -169,30 +170,45 @@ class CloudSyncService {
     return reference.getDownloadURL();
   }
 
+  // ─── Training CRUD ────────────────────────────────────────────
+
   static Future<List<TrainingModel>> loadTrainings() async {
     if (!FirebaseService.isReady || _auth.currentUser == null) {
+      debugPrint('[CloudSync] loadTrainings: Firebase not ready or no user');
       return [];
     }
 
     try {
+      debugPrint('[CloudSync] loadTrainings: Fetching from Firestore...');
+      // Removed .orderBy('time') — it requires a Firestore index.
+      // We sort in-memory instead after fetching all docs.
       final snapshot = await _firestore
           .collection('users')
           .doc(_auth.currentUser!.uid)
           .collection('trainings')
-          .orderBy('time', descending: false)
           .get();
 
-      return snapshot.docs.map((doc) {
+      debugPrint('[CloudSync] loadTrainings: Got ${snapshot.docs.length} docs');
+
+      final trainings = snapshot.docs.map((doc) {
         try {
           return TrainingModel.fromJson({
             ...doc.data(),
             'id': doc.id,
           });
-        } catch (_) {
+        } catch (e) {
+          debugPrint('[CloudSync] loadTrainings: Failed to parse doc ${doc.id}: $e');
           return null;
         }
       }).whereType<TrainingModel>().toList();
-    } catch (_) {
+
+      // Sort by time in-memory
+      trainings.sort((a, b) => a.time.compareTo(b.time));
+
+      debugPrint('[CloudSync] loadTrainings: Parsed ${trainings.length} trainings');
+      return trainings;
+    } catch (e) {
+      debugPrint('[CloudSync] loadTrainings: ERROR: $e');
       return [];
     }
   }
@@ -201,6 +217,8 @@ class CloudSyncService {
     if (!FirebaseService.isReady || _auth.currentUser == null) {
       return;
     }
+
+    debugPrint('[CloudSync] saveTrainings: Saving ${trainings.length} trainings...');
 
     final collection = _firestore.collection('users').doc(_auth.currentUser!.uid).collection('trainings');
     final batch = _firestore.batch();
@@ -217,5 +235,72 @@ class CloudSyncService {
     }
 
     await batch.commit();
+    debugPrint('[CloudSync] saveTrainings: Done');
+  }
+
+  // ─── Category Sync ────────────────────────────────────────────
+
+  static Future<Map<String, dynamic>?> loadCategories() async {
+    if (!FirebaseService.isReady || _auth.currentUser == null) {
+      debugPrint('[CloudSync] loadCategories: Firebase not ready or no user');
+      return null;
+    }
+
+    try {
+      debugPrint('[CloudSync] loadCategories: Fetching from Firestore...');
+      final doc = await _firestore
+          .collection('users')
+          .doc(_auth.currentUser!.uid)
+          .get();
+
+      if (!doc.exists) {
+        debugPrint('[CloudSync] loadCategories: No user doc found');
+        return null;
+      }
+
+      final data = doc.data();
+      if (data == null) return null;
+
+      final categories = data['categories'];
+      final categoryIcons = data['categoryIcons'];
+
+      if (categories == null) {
+        debugPrint('[CloudSync] loadCategories: No categories field in user doc');
+        return null;
+      }
+
+      debugPrint('[CloudSync] loadCategories: Found categories: $categories');
+      return {
+        'categories': categories,
+        'categoryIcons': categoryIcons,
+      };
+    } catch (e) {
+      debugPrint('[CloudSync] loadCategories: ERROR: $e');
+      return null;
+    }
+  }
+
+  static Future<void> saveCategories({
+    required List<String> categories,
+    required Map<String, String> categoryIcons,
+  }) async {
+    if (!FirebaseService.isReady || _auth.currentUser == null) {
+      return;
+    }
+
+    debugPrint('[CloudSync] saveCategories: Saving ${categories.length} categories...');
+    try {
+      await _firestore.collection('users').doc(_auth.currentUser!.uid).set(
+        {
+          'categories': categories,
+          'categoryIcons': categoryIcons,
+          'categoriesUpdatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+      debugPrint('[CloudSync] saveCategories: Done');
+    } catch (e) {
+      debugPrint('[CloudSync] saveCategories: ERROR: $e');
+    }
   }
 }
