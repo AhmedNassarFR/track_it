@@ -24,6 +24,7 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
   final TextEditingController reps = TextEditingController();
 
   String selectedValue = "";
+  String _weightUnit = 'kg';
   String? trainingNameError;
   String? weightError;
   String? repsError;
@@ -32,6 +33,8 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
   void initState() {
     super.initState();
     selectedValue = widget.trainingType;
+    final SettingsController settingsController = Get.find<SettingsController>();
+    _weightUnit = settingsController.weightUnit.value;
   }
 
   void _triggerFeedback() {
@@ -119,13 +122,22 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Weight
-                  Obx(() => _buildGlassTextField(
-                    controller: weight,
-                    hint: 'Weight (${settingsController.unitLabel})',
-                    error: weightError,
-                    keyboardType: TextInputType.number,
-                  )),
+                  // Weight with unit selector
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildGlassTextField(
+                          controller: weight,
+                          hint: 'Weight',
+                          error: weightError,
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildUnitSelector(),
+                    ],
+                  ),
                   const SizedBox(height: 14),
 
                   // Reps
@@ -211,10 +223,14 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
                           if (trainingNameError == null &&
                               weightError == null &&
                               repsError == null) {
+                            final parsedWeight = double.parse(weight.text);
+                            final weightInKg = _weightUnit == 'lbs'
+                                ? parsedWeight / 2.20462
+                                : parsedWeight;
                             final TrainingModel newTraining = TrainingModel(
                               trainingType: selectedValue,
                               trainingName: trainingName.text,
-                              weight: settingsController.toKg(double.parse(weight.text)),
+                              weight: weightInKg,
                               reps: int.parse(reps.text),
                             );
                             trainingController.addTraining(newTraining);
@@ -323,6 +339,34 @@ class _AddTrainingScreenState extends State<AddTrainingScreen> {
               fontSize: 15,
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnitSelector() {
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.glassBorder),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          dropdownColor: AppColors.darkGrey,
+          value: _weightUnit,
+          style: const TextStyle(color: AppColors.accentCyan, fontSize: 14, fontWeight: FontWeight.w700),
+          icon: Icon(Icons.arrow_drop_down, color: AppColors.textSecondary, size: 20),
+          borderRadius: BorderRadius.circular(14),
+          items: const [
+            DropdownMenuItem(value: 'kg', child: Text('kg')),
+            DropdownMenuItem(value: 'lbs', child: Text('lbs')),
+          ],
+          onChanged: (val) {
+            if (val != null) setState(() => _weightUnit = val);
+          },
         ),
       ),
     );

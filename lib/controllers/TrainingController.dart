@@ -398,12 +398,13 @@ class TrainingController extends GetxController {
       final training = trainingList[index];
       final oldWeight = training.weight;
       final oldReps = training.reps;
-      final date = DateTime.now().toIso8601String();
+      // Use the time when the previous set was originally logged, not now
+      final previousDate = training.time.toIso8601String();
 
-      training.history.add({'weight': oldWeight, 'reps': oldReps, 'date': date});
+      training.history.add({'weight': oldWeight, 'reps': oldReps, 'date': previousDate});
       training.weight = newWeight;
       training.reps = newReps;
-      // Update the time so we know when this current set was achieved
+      // Update the time to now for the new current set
       training.time = DateTime.now();
 
       trainingList[index] = training;
@@ -415,9 +416,10 @@ class TrainingController extends GetxController {
   void editWeight(int index, double newWeight) {
     final training = trainingList[index];
     final oldWeight = training.weight;
-    final date = DateTime.now().toIso8601String();
-    training.history.add({'weight': oldWeight, 'date': date});
+    final previousDate = training.time.toIso8601String();
+    training.history.add({'weight': oldWeight, 'date': previousDate});
     training.weight = newWeight;
+    training.time = DateTime.now();
     trainingList[index] = training;
     saveTrainingList();
   }

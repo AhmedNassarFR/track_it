@@ -17,6 +17,7 @@ class EditWeightScreen extends StatefulWidget {
 class _EditWeightScreenState extends State<EditWeightScreen> {
   final TextEditingController weightController = TextEditingController();
   final TextEditingController repsController = TextEditingController();
+  String _weightUnit = 'kg';
   String? weightError;
   String? repsError;
 
@@ -25,8 +26,11 @@ class _EditWeightScreenState extends State<EditWeightScreen> {
     super.initState();
     final TrainingController trainingController = Get.find();
     final SettingsController settingsController = Get.find<SettingsController>();
+    _weightUnit = settingsController.weightUnit.value;
     final training = trainingController.trainingList[widget.index];
-    final displayWeight = settingsController.fromKg(training.weight);
+    final displayWeight = _weightUnit == 'lbs'
+        ? training.weight * 2.20462
+        : training.weight;
     weightController.text = displayWeight % 1 == 0
         ? displayWeight.toInt().toString()
         : displayWeight.toStringAsFixed(1);
@@ -36,7 +40,6 @@ class _EditWeightScreenState extends State<EditWeightScreen> {
   @override
   Widget build(BuildContext context) {
     final TrainingController trainingController = Get.find();
-    final SettingsController settingsController = Get.find<SettingsController>();
 
     return Center(
       child: SingleChildScrollView(
@@ -69,10 +72,19 @@ class _EditWeightScreenState extends State<EditWeightScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _buildGlassTextField(
-                    controller: weightController,
-                    hint: 'New weight (${settingsController.unitLabel})',
-                    error: weightError,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _buildGlassTextField(
+                          controller: weightController,
+                          hint: 'New weight',
+                          error: weightError,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildUnitSelector(),
+                    ],
                   ),
                   const SizedBox(height: 14),
                   _buildGlassTextField(
@@ -105,9 +117,13 @@ class _EditWeightScreenState extends State<EditWeightScreen> {
                           });
 
                           if (weightError == null && repsError == null) {
+                            final parsedWeight = double.parse(weightController.text);
+                            final weightInKg = _weightUnit == 'lbs'
+                                ? parsedWeight / 2.20462
+                                : parsedWeight;
                             trainingController.logNewSet(
                               widget.index,
-                              settingsController.toKg(double.parse(weightController.text)),
+                              weightInKg,
                               int.parse(repsController.text),
                             );
                             Get.back();
@@ -120,6 +136,34 @@ class _EditWeightScreenState extends State<EditWeightScreen> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnitSelector() {
+    return Container(
+      height: 56,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.glassBorder),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          dropdownColor: AppColors.darkGrey,
+          value: _weightUnit,
+          style: const TextStyle(color: AppColors.accentCyan, fontSize: 14, fontWeight: FontWeight.w700),
+          icon: Icon(Icons.arrow_drop_down, color: AppColors.textSecondary, size: 20),
+          borderRadius: BorderRadius.circular(14),
+          items: const [
+            DropdownMenuItem(value: 'kg', child: Text('kg')),
+            DropdownMenuItem(value: 'lbs', child: Text('lbs')),
+          ],
+          onChanged: (val) {
+            if (val != null) setState(() => _weightUnit = val);
+          },
         ),
       ),
     );
